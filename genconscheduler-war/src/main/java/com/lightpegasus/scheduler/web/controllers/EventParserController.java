@@ -18,7 +18,7 @@ import com.googlecode.objectify.Key;
 import com.lightpegasus.scheduler.gencon.Gencon2013ScheduleParser;
 import com.lightpegasus.scheduler.gencon.entity.GenconCategory;
 import com.lightpegasus.scheduler.gencon.entity.GenconEvent;
-import com.lightpegasus.scheduler.gencon.entity.Queries;
+import com.lightpegasus.scheduler.gencon.Queries;
 import com.lightpegasus.scheduler.gencon.entity.SyncStatus;
 import com.lightpegasus.scheduler.web.RequestHelpers;
 import com.lightpegasus.thymeleaf.ThymeleafController;

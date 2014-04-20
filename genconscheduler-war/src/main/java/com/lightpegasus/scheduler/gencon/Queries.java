@@ -1,9 +1,12 @@
-package com.lightpegasus.scheduler.gencon.entity;
+package com.lightpegasus.scheduler.gencon;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.googlecode.objectify.Objectify;
 import com.googlecode.objectify.ObjectifyService;
+import com.lightpegasus.scheduler.gencon.entity.GenconCategory;
+import com.lightpegasus.scheduler.gencon.entity.GenconEvent;
+import com.lightpegasus.scheduler.gencon.entity.SyncStatus;
 
 import java.util.ArrayList;
 import java.util.Collection;

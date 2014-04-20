@@ -2,7 +2,7 @@ package com.lightpegasus.scheduler.web.controllers;
 
 import com.google.common.collect.Iterables;
 import com.lightpegasus.scheduler.gencon.entity.GenconCategory;
-import com.lightpegasus.scheduler.gencon.entity.Queries;
+import com.lightpegasus.scheduler.gencon.Queries;
 import com.lightpegasus.thymeleaf.ThymeleafController;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.WebContext;

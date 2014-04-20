@@ -3,7 +3,7 @@ package com.lightpegasus.scheduler.web.controllers;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import com.lightpegasus.scheduler.gencon.entity.GenconEvent;
-import com.lightpegasus.scheduler.gencon.entity.Queries;
+import com.lightpegasus.scheduler.gencon.Queries;
 import com.lightpegasus.scheduler.web.RequestHelpers;
 import com.lightpegasus.thymeleaf.ThymeleafController;
 import org.thymeleaf.TemplateEngine;
