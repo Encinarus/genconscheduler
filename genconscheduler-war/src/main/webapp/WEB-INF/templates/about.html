@@ -1,0 +1,78 @@
+<!DOCTYPE html SYSTEM "http://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-4.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css"/>
+  <link type="text/css" rel="stylesheet" href="/stylesheets/main.css"/>
+  <title>About</title>
+</head>
+
+<body>
+<div class="navbar navbar-default navbar-fixed-top" role="navigation" th:replace="core :: topnav">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="#">Gen Con 2013 Scheduler</a>
+    </div>
+    <div class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li class="active"><a href="#">Home</a></li>
+        <li><a href="#about">About</a></li>
+      </ul>
+      <form class="navbar-form navbar-right col-sm-6" action="/search">
+        <input type="text" class="form-control" style="min-width: 300px;" placeholder="Search..." />
+      </form>
+    </div><!--/.nav-collapse -->
+  </div>
+</div>
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="main">
+      <h1 class="page-header">About</h1>
+      <div class="col-md-10">
+        <p>
+          Not much to say here. Gencon is a fantastic event but it's event listings and cart setup
+          leave some to be desired. For the last two years my group has used
+          <a href="http://gencon.highprogrammer.com">gencon.highprogrammer.com</a> (which is a huge
+          step up from what gencon offers) but as our group grew, we wanted more. That's where this
+          comes in.
+        </p>
+        <p>
+          Specifically, we wanted a way to track which events we're interested and share them with
+          each other without going crazy for managing it. We only wanted a few things beyond what
+          the highprogrammer site had:
+          <ul>
+            <li>Save events for later.</li>
+            <li>Sharing interested events.</li>
+            <li>Better search and clustering, specifically for figuring out what will fill free slots.</li>
+          </ul>
+        </p>
+        <p>
+          So, I made this. If you have any comments or suggestions, feel free to send them to
+          <a href="mailto:gencon@lightpegasus.com">gencon@lightpegasus.com</a>
+        </p>
+        <p>
+          Site built with:
+          <ul>
+            <li><a href="https://developers.google.com/appengine/docs/java/">Google AppEngine</a></li>
+            <li><a href="https://code.google.com/p/objectify-appengine/">Objectify</a></li>
+            <li><a href="http://www.thymeleaf.org/">Thymeleaf</a></li>
+            <li><a href="http://getbootstrap.com">bootstrap</a></li>
+            <li><a href="http://glyphicons.com/">glyphicons</a> as permitted through <a href="http://getbootstrap.com/components/">bootstrap</a></li>
+          </ul>
+        </p>
+      </div>
+  </div>
+</div>
+
+<script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+<script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+</body>
+</html>

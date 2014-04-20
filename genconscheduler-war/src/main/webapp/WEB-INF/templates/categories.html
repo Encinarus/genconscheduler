@@ -1,0 +1,78 @@
+<!DOCTYPE html SYSTEM "http://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-4.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css"/>
+  <link type="text/css" rel="stylesheet" href="/stylesheets/main.css"/>
+  <title>Gencon Event Categories</title>
+</head>
+
+<body>
+<div class="navbar navbar-default navbar-fixed-top" role="navigation" th:replace="core :: topnav">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="#">Gen Con 2013 Scheduler</a>
+    </div>
+    <div class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li class="active"><a href="#">Home</a></li>
+        <li><a href="#about">About</a></li>
+      </ul>
+      <form class="navbar-form navbar-right">
+        <input type="text" class="form-control" placeholder="Search..." />
+      </form>
+    </div><!--/.nav-collapse -->
+  </div>
+</div>
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-sm-9 col-md-10 main">
+      <h1 class="page-header">Events by type</h1>
+
+      <div class="row" th:each="row : ${rows}">
+        <div class="col-md-6" style="padding-bottom: 5px" th:each="category : ${row}">
+          <a class="btn btn-default text-left"
+             href="#" th:href="@{'/search?q=category:' + ${category.eventTypeAbbreviation}}"
+             role="button"
+             style="width:100%; white-space:normal"><span th:text="${category.categoryName}">TRD - Trade Day Event!</span>
+             <span class="badge" th:text="${category.eventCount}">10</span></a>
+        </div><!--/* category */-->
+
+<!--/*-->
+        <!-- Dummy values for nice display -->
+        <div class="col-md-6" style="padding-bottom: 5px" th:each="category : ${row}">
+          <a class="btn btn-default text-left" href="#" role="button"
+             style="width:100%; white-space:normal"><span th:text="${category.categoryName}">TRD - Trade Day Event!</span>
+            <span class="badge" th:text="${category.eventCount}">10</span></a>
+        </div>
+      </div>
+
+      <div class="row" th:each="row : ${rows}">
+        <div class="col-md-6" style="padding-bottom: 5px" th:each="category : ${row}">
+          <a class="btn btn-default text-left" href="#" role="button"
+             style="width:100%; white-space:normal"><span th:text="${category.categoryName}">TRD - Trade Day Event!</span>
+            <span class="badge" th:text="${category.eventCount}">10</span></a>
+        </div>
+        <div class="col-md-6" style="padding-bottom: 5px" th:each="category : ${row}">
+          <a class="btn btn-default text-left" href="#" role="button"
+             style="width:100%; white-space:normal"><span th:text="${category.categoryName}">TRD - Trade Day Event!</span>
+            <span class="badge" th:text="${category.eventCount}">10</span></a>
+        </div>
+<!--*/-->
+      </div><!--/* row */-->
+    </div>
+  </div>
+</div>
+
+<script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+<script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+</body>
+</html>

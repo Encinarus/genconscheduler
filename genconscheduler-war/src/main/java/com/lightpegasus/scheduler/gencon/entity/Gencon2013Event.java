@@ -1,0 +1,418 @@
+package com.lightpegasus.scheduler.gencon.entity;
+
+import com.google.common.base.Objects;
+import com.google.common.collect.ImmutableList;
+import com.googlecode.objectify.annotation.Cache;
+import com.googlecode.objectify.annotation.Entity;
+import com.googlecode.objectify.annotation.Id;
+import com.googlecode.objectify.annotation.Index;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.joda.time.Duration;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Locale;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Full details of a gencon event.
+ * <p/>
+ */
+@Entity
+@Cache
+public class Gencon2013Event {
+  @Id private String gameId;
+
+  // Index the fields we'll want to query on.
+  @Index private long clusterHash;
+  @Index private String title;
+
+  // This is the 3 or 4 letter code which represents the event type.
+  @Index private String eventTypeAbbreviation;
+
+  /** References DateTimeConstants.MONDAY/TUESDAY/... with MONDAY=1 and SUNDAY=7 */
+  @Index private int dayOfWeek;
+
+  private String group;
+  private String eventType;
+  private String shortDescription;
+  private String longDescription;
+  private String gameSystem;
+  private String rulesEdition;
+  private Integer minimumPlayers;
+  private Integer maximumPlayers;
+  private String ageRequired;
+  private String experienceRequired;
+  private Boolean materialsProvided;
+  private DateTime startTime;
+  private Duration duration;
+  private DateTime endTime;
+  private List<String> gmNames;
+  private String website;
+  private String email;
+  private Boolean isTournament;
+  private Integer roundNumber;
+  private Integer totalRounds;
+  private Duration minimumPlayTime;
+  private Boolean attendeeRegistration;
+  private BigDecimal cost;
+  private String location;
+  private String roomName;
+  private String tableNumber;
+  private String specialCategory;
+  private Integer ticketsAvailable;
+  private DateTime lastModified;
+
+  public Gencon2013Event() {
+
+  }
+
+  public void setTournament(Boolean isTournament) {
+    this.isTournament = isTournament;
+  }
+
+  public String getGameId() {
+    return gameId;
+  }
+
+  public void setGameId(String gameId) {
+    this.gameId = gameId;
+  }
+
+  public String getGroup() {
+    return group;
+  }
+
+  public void setGroup(String group) {
+    this.group = group;
+  }
+
+  public String getTitle() {
+    return title;
+  }
+
+  public void setTitle(String title) {
+    this.title = title;
+  }
+
+  public String getShortDescription() {
+    return shortDescription;
+  }
+
+  public void setShortDescription(String shortDescription) {
+    this.shortDescription = shortDescription;
+  }
+
+  public String getLongDescription() {
+    return longDescription;
+  }
+
+  public void setLongDescription(String longDescription) {
+    this.longDescription = longDescription;
+  }
+
+  public String getEventType() {
+    return eventType;
+  }
+
+  public String getEventTypeAbbreviation() {
+    return eventTypeAbbreviation;
+  }
+
+  public void setEventType(String eventType) {
+    this.eventType = eventType;
+    this.eventTypeAbbreviation = eventType.substring(0, eventType.indexOf(' '));
+  }
+
+  public String getGameSystem() {
+    return gameSystem;
+  }
+
+  public void setGameSystem(String gameSystem) {
+    this.gameSystem = gameSystem;
+  }
+
+  public String getRulesEdition() {
+    return rulesEdition;
+  }
+
+  public void setRulesEdition(String rulesEdition) {
+    this.rulesEdition = rulesEdition;
+  }
+
+  public Integer getMinimumPlayers() {
+    return minimumPlayers;
+  }
+
+  public void setMinimumPlayers(int minimumPlayers) {
+    this.minimumPlayers = minimumPlayers;
+  }
+
+  public Integer getMaximumPlayers() {
+    return maximumPlayers;
+  }
+
+  public void setMaximumPlayers(int maximumPlayers) {
+    this.maximumPlayers = maximumPlayers;
+  }
+
+  public String getAgeRequired() {
+    return ageRequired;
+  }
+
+  public void setAgeRequired(String ageRequired) {
+    this.ageRequired = ageRequired;
+  }
+
+  public String getExperienceRequired() {
+    return experienceRequired;
+  }
+
+  public void setExperienceRequired(String experienceRequired) {
+    this.experienceRequired = experienceRequired;
+  }
+
+  public Boolean getMaterialsProvided() {
+    return materialsProvided;
+  }
+
+  public void setMaterialsProvided(Boolean materialsProvided) {
+    this.materialsProvided = materialsProvided;
+  }
+
+  public DateTime getStartTime() {
+    return startTime;
+  }
+
+  public String getReadableDate() {
+//    return DateTimeFormat.forPattern("EE MM/dd/yy")
+    return DateTimeFormat.forPattern("EE")
+        .withZone(DateTimeZone.forID("America/Indiana/Indianapolis"))
+        .print(startTime);
+  }
+
+  public String getReadableStartTime() {
+    return DateTimeFormat.forPattern("hh:mm a")
+        .withZone(DateTimeZone.forID("America/Indiana/Indianapolis"))
+        .print(startTime);
+  }
+
+  public void setStartTime(DateTime startTime) {
+    this.startTime = startTime;
+    this.dayOfWeek = startTime.getDayOfWeek();
+  }
+
+  public Duration getDuration() {
+    return duration;
+  }
+
+  public void setDuration(int durationMinutes) {
+    this.duration = new Duration(TimeUnit.MINUTES.toMillis(durationMinutes));
+  }
+
+  public DateTime getEndTime() {
+    return endTime;
+  }
+
+  public String getReadableEndTime() {
+    return DateTimeFormat.forPattern("hh:mm a")
+        .withZone(DateTimeZone.forID("America/Indiana/Indianapolis"))
+        .print(endTime);
+  }
+
+  public void setEndTime(DateTime endTime) {
+    this.endTime = endTime;
+  }
+
+  public List<String> getGmNames() {
+    return gmNames;
+  }
+
+  public void setGmNames(List<String> gmNames) {
+    this.gmNames = ImmutableList.copyOf(gmNames);
+  }
+
+  public String getWebsite() {
+    return website;
+  }
+
+  public void setWebsite(String website) {
+    this.website = website;
+  }
+
+  public String getEmail() {
+    return email;
+  }
+
+  public void setEmail(String email) {
+    this.email = email;
+  }
+
+  public Boolean getIsTournament() {
+    return isTournament;
+  }
+
+  public Integer getRoundNumber() {
+    return roundNumber;
+  }
+
+  public void setRoundNumber(int roundNumber) {
+    this.roundNumber = roundNumber;
+  }
+
+  public Integer getTotalRounds() {
+    return totalRounds;
+  }
+
+  public void setTotalRounds(Integer totalRounds) {
+    this.totalRounds = totalRounds;
+  }
+
+  public Duration getMinimumPlayTime() {
+    return minimumPlayTime;
+  }
+
+  public void setMinimumPlayTime(Integer minPlayTimeMinutes) {
+    if (minPlayTimeMinutes == null) {
+      this.minimumPlayTime = null;
+    } else {
+      this.minimumPlayTime = new Duration(TimeUnit.MINUTES.toMillis(minPlayTimeMinutes));
+    }
+  }
+
+  public Boolean getAttendeeRegistration() {
+    return attendeeRegistration;
+  }
+
+  public void setAttendeeRegistration(Boolean attendeeRegistration) {
+    this.attendeeRegistration = attendeeRegistration;
+  }
+
+  public BigDecimal getCost() {
+    return cost;
+  }
+
+  public void setCost(BigDecimal cost) {
+    this.cost = cost;
+  }
+
+  public String getLocation() {
+    return location;
+  }
+
+  public void setLocation(String location) {
+    this.location = location;
+  }
+
+  public String getRoomName() {
+    return roomName;
+  }
+
+  public void setRoomName(String roomName) {
+    this.roomName = roomName;
+  }
+
+  public String getTableNumber() {
+    return tableNumber;
+  }
+
+  public void setTableNumber(String tableNumber) {
+    this.tableNumber = tableNumber;
+  }
+
+  public String getSpecialCategory() {
+    return specialCategory;
+  }
+
+  public void setSpecialCategory(String specialCategory) {
+    this.specialCategory = specialCategory;
+  }
+
+  public Integer getTicketsAvailable() {
+    return ticketsAvailable;
+  }
+
+  public void setTicketsAvailable(Integer ticketsAvailable) {
+    this.ticketsAvailable = ticketsAvailable;
+  }
+
+  public DateTime getLastModified() {
+    return lastModified;
+  }
+
+  public void setLastModified(DateTime lastModified) {
+    this.lastModified = lastModified;
+  }
+
+  public long getClusterHash() {
+    return clusterHash;
+  }
+
+  public int getDayOfWeek() {
+    return dayOfWeek;
+  }
+
+  public void updateHash() {
+    this.clusterHash = Objects.toStringHelper(this)
+        .add("group", group)
+        .add("title", title)
+        .add("shortDescription", shortDescription)
+        .add("longDescription", longDescription)
+        .add("eventType", eventType)
+        .add("gameSystem", gameSystem)
+        .add("rulesEdition", rulesEdition)
+        .add("ageRequired", ageRequired)
+        .add("experienceRequired", experienceRequired)
+        .add("materialsProvided", materialsProvided)
+        .add("duration", duration)
+        .add("website", website)
+        .add("email", email)
+        .add("isTournament", isTournament)
+        .add("totalRounds", totalRounds)
+        .add("minimumPlayTime", minimumPlayTime)
+        .add("cost", cost)
+        .add("specialCategory", specialCategory)
+        .toString()
+        .hashCode();
+  }
+
+  @Override
+  public String toString() {
+    return Objects.toStringHelper(this)
+        .add("group", group)
+        .add("title", title)
+        .add("clusterHash", clusterHash)
+        .add("shortDescription", shortDescription)
+        .add("longDescription", longDescription)
+        .add("eventType", eventType)
+        .add("gameSystem", gameSystem)
+        .add("rulesEdition", rulesEdition)
+        .add("minimumPlayers", minimumPlayers)
+        .add("maximumPlayers", maximumPlayers)
+        .add("ageRequired", ageRequired)
+        .add("experienceRequired", experienceRequired)
+        .add("materialsProvided", materialsProvided)
+        .add("startTime", startTime)
+        .add("duration", duration)
+        .add("endTime", endTime)
+        .add("gmNames", gmNames)
+        .add("website", website)
+        .add("email", email)
+        .add("isTournament", isTournament)
+        .add("roundNumber", roundNumber)
+        .add("totalRounds", totalRounds)
+        .add("minimumPlayTime", minimumPlayTime)
+        .add("attendeeRegistration", attendeeRegistration)
+        .add("cost", cost)
+        .add("location", location)
+        .add("roomName", roomName)
+        .add("tableNumber", tableNumber)
+        .add("specialCategory", specialCategory)
+        .add("ticketsAvailable", ticketsAvailable)
+        .add("lastModified", lastModified)
+        .toString();
+  }
+}

@@ -1,0 +1,79 @@
+<!DOCTYPE html SYSTEM "http://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-4.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css"/>
+  <link type="text/css" rel="stylesheet" href="/stylesheets/main.css"/>
+
+  <title>Event Details</title>
+</head>
+
+<body>
+<div class="navbar navbar-default navbar-fixed-top" role="navigation" th:replace="core :: topnav">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="#">Gen Con 2013 Scheduler</a>
+    </div>
+    <div class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li class="active"><a href="#">Home</a></li>
+        <li><a href="#about">About</a></li>
+      </ul>
+      <form class="navbar-form navbar-right col-sm-6" action="/search">
+        <input type="text" class="form-control" style="min-width: 300px;" placeholder="Search..." />
+      </form>
+    </div><!--/.nav-collapse -->
+  </div>
+</div>
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="main">
+      <ol class="breadcrumb">
+        <li><a href="/categories/TDA"
+               th:href="@{'/search?q=category:' + ${event.eventTypeAbbreviation}}"><span
+            th:text="${event.eventTypeAbbreviation}">TDA</span></a></li>
+        <li class="active"><span th:text="${event.gameId}">TDA12345</span></li>
+      </ol>
+      <h1 class="page-header"><button type="button" class="btn btn-default btn-lg">
+        <span class="glyphicon glyphicon-star"></span>
+      </button> <span th:text="${event.title}">True Dungeon Adventures - Lycan's afoot!</span></h1>
+      <p><em th:text="${event.shortDescription}">
+        Short description of the event. You should have some knowledge of the game.
+      </em></p>
+      <p th:text="${event.longDescription}">
+        Your quest tasks your party with ascending the tower of a mad gnome Tinkerer to find the missing dwarves of Icecrag Keep. This is the 2nd adventure of this year’s two-part epic event. Your event starts in a medieval inn where your party will have a private room with a TD Coach to prepare for your quest. Your two-hour quest tasks you with ascending the tower of a mad gnome Tinkerer to find the missing dwarves of Icecrag Keep. You will face perplexing puzzles &amp; exciting combats while immersed in a setting of a tower of “gnomepunk” design. There are two versions of this module. One is more combat-focused, while the other is more puzzle-oriented. The two versions have two unique rooms each, so if you play both you will see two new rooms in each adventure. As we did last year, we are presenting an epic two-part presentation. “Lycans Afoot!” is the first half of our 2013 grand adventure, and the second part is "Golembane". You can play either to have a great time, and for even more fun you should try playing both. Please arrive 10 minutes before your start time.
+      </p>
+      <hr/>
+      <h4>Details</h4>
+      <div class="well well-sm">
+        <!-- Would this be better as divs? Maybe a tabbed interface, with just time, location
+             and # tickets available in the default view with more in the full view -->
+        <dl class="dl-horizontal">
+          <dt>Event Type:</dt><dd><span th:text="${event.eventType}">Test</span>&nbsp;</dd>
+          <dt>Game System:</dt><dd><span th:text="${event.gameSystem}"></span>&nbsp;</dd>
+          <dt>Rules Edition:</dt><dd><span th:text="${event.rulesEdition}">Test3</span>&nbsp;</dd>
+          <dt>Minimum Players:</dt><dd><span th:text="${event.minimumPlayers}"></span>&nbsp;</dd>
+          <dt>Maximum Players:</dt><dd><span th:text="${event.maximumPlayers}">Test5</span>&nbsp;</dd>
+          <dt>Age Required:</dt><dd><span th:text="${event.ageRequired}"></span>&nbsp;</dd>
+          <dt>Experience Required:</dt><dd><span th:text="${event.experienceRequired}">Test7</span>&nbsp;</dd>
+          <dt>Materials Provided:</dt><dd><span th:text="${event.materialsProvided}"></span>&nbsp;</dd>
+          <dt>Timing:</dt><dd><span th:text="${event.readableDate}"></span> <span th:text="${event.readableStartTime}"></span> - <span th:text="${event.readableEndTime}"></span></dd>
+          <dt>GM Names:</dt><dd><span th:text="${event.gmNames}"></span>&nbsp;</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+<script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+</body>
+</html>
