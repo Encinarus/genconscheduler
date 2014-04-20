@@ -1,4 +1,4 @@
-package com.lightpegasus.scheduler.servlet;
+package com.lightpegasus.scheduler.web;
 
 import ognl.OgnlRuntime;
 

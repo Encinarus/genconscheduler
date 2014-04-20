@@ -14,7 +14,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Ordering;
 import com.lightpegasus.scheduler.gencon.entity.GenconEvent;
 import com.lightpegasus.scheduler.gencon.entity.SearchQuery;
-import com.lightpegasus.scheduler.servlet.RequestHelpers;
+import com.lightpegasus.scheduler.web.RequestHelpers;
 import com.lightpegasus.thymeleaf.ThymeleafController;
 import org.joda.time.DateTimeComparator;
 import org.thymeleaf.TemplateEngine;

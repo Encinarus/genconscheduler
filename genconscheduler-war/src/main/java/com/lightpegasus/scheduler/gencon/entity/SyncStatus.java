@@ -3,7 +3,6 @@ package com.lightpegasus.scheduler.gencon.entity;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeUtils;
 import org.joda.time.DateTimeZone;
 
 /**
@@ -11,7 +10,7 @@ import org.joda.time.DateTimeZone;
  */
 @Entity
 public class SyncStatus {
-  @Id int year;
+  @Id long year;
 
   DateTime syncTime;
 
@@ -32,7 +31,7 @@ public class SyncStatus {
     return syncTime;
   }
 
-  public int getYear() {
+  public long getYear() {
     return year;
   }
 }

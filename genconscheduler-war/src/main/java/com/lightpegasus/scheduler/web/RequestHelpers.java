@@ -1,4 +1,4 @@
-package com.lightpegasus.scheduler.servlet;
+package com.lightpegasus.scheduler.web;
 
 import com.google.appengine.labs.repackaged.com.google.common.base.Objects;
 import com.google.appengine.labs.repackaged.com.google.common.collect.ImmutableMap;

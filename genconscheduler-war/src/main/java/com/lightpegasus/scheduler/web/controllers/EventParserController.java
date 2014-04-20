@@ -1,4 +1,4 @@
-package com.lightpegasus.scheduler.servlet;
+package com.lightpegasus.scheduler.web.controllers;
 
 import com.google.appengine.api.datastore.QueryResultIterable;
 import com.google.appengine.api.search.Document;
@@ -10,24 +10,23 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
 import com.googlecode.objectify.Key;
 import com.lightpegasus.scheduler.gencon.Gencon2013ScheduleParser;
 import com.lightpegasus.scheduler.gencon.entity.GenconCategory;
 import com.lightpegasus.scheduler.gencon.entity.GenconEvent;
 import com.lightpegasus.scheduler.gencon.entity.Queries;
 import com.lightpegasus.scheduler.gencon.entity.SyncStatus;
+import com.lightpegasus.scheduler.web.RequestHelpers;
+import com.lightpegasus.thymeleaf.ThymeleafController;
 import org.joda.time.DateTime;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.WebContext;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -41,10 +40,98 @@ import java.util.logging.Logger;
 import static com.googlecode.objectify.ObjectifyService.ofy;
 
 /**
- * Parses the events and fills the datastore with them.
+ *
  */
-public class EventParserServlet extends HttpServlet {
-  private static Logger log = Logger.getLogger(EventParserServlet.class.getSimpleName());
+public class EventParserController implements ThymeleafController {
+  private static Logger log = Logger.getLogger(EventParserController.class.getSimpleName());
+
+  @Override
+  public void process(WebContext context, TemplateEngine engine) throws Exception {
+    log.info("Got request for EventParser: " +
+        RequestHelpers.asDebugString(context.getHttpServletRequest()));
+
+    Multimap<String, String> parameters = RequestHelpers.parameterMultimap(
+        context.getHttpServletRequest());
+
+    String year = Iterables.getFirst(parameters.get("year"), "2013");
+    boolean isFull = Boolean.valueOf(Iterables.getFirst(parameters.get("full"), "false"));
+
+    SyncStatus syncStatus = new Queries().getSyncStatus(Integer.parseInt(year));
+
+    log.info("Loading old event ids");
+
+    ImmutableMap.Builder<String, Key<GenconEvent>> storedKeyBuilder = ImmutableMap.builder();
+    long genconYear = syncStatus.getYear();
+    for (Key<GenconEvent> key : getStoredKeysForYear(genconYear)) {
+      storedKeyBuilder.put(key.getName(), key);
+    }
+    Map<String, Key<GenconEvent>> storedKeys  = storedKeyBuilder.build();
+
+    int eventsSeen = 0;
+    final Set<String> parsedEventKeys = new HashSet<>();
+    final Map<String, GenconCategory> categories = new HashMap<>();
+
+    try (BufferedReader reader = loadGenconCsv(context, year, isFull)) {
+      final int eventsPerBatch = 100;
+      List<GenconEvent> eventsToSave = new ArrayList<>(eventsPerBatch);
+      List<Document> docsToSave = new ArrayList<>(eventsPerBatch);
+
+      IndexSpec indexSpec = IndexSpec.newBuilder().setName("events").build();
+      Index index = SearchServiceFactory.getSearchService().getIndex(indexSpec);
+
+      // Process the file, and update all events which have been updated since
+      // the most recent update we've seen in a file
+      DateTime mostRecentUpdate = syncStatus.getSyncTime();
+      for (GenconEvent event : new Gencon2013ScheduleParser(reader)) {
+        String eventType = event.getEventType();
+        if (!categories.containsKey(eventType)) {
+          categories.put(eventType, new GenconCategory(eventType, 2013));
+        }
+
+        categories.get(eventType).addEvent(event);
+
+        parsedEventKeys.add(event.getEventKey());
+        DateTime eventLastModified = event.getLastModified();
+        if (!storedKeys.containsKey(event.getEventKey())
+            || eventLastModified.isAfter(syncStatus.getSyncTime())) {
+          eventsToSave.add(event);
+          docsToSave.add(indexEvent(event));
+          eventsSeen++;
+
+          if (eventLastModified.isAfter(mostRecentUpdate)) {
+            mostRecentUpdate = eventLastModified;
+          }
+        }
+
+        if (eventsToSave.size() == eventsPerBatch) {
+          saveBatch(eventsToSave, docsToSave, index);
+
+          eventsToSave = new ArrayList<>(eventsPerBatch);
+          docsToSave = new ArrayList<>(eventsPerBatch);
+        }
+      }
+
+      log.info("Saving last entities.");
+
+      saveBatch(eventsToSave, docsToSave, index);
+
+      ofy().save().entities(categories.values()).now();
+
+      // Now to figure out which events to delete
+      // TODO: Once we have starred events, we'll need to notify people
+      markEventsDeleted(mostRecentUpdate, storedKeys, parsedEventKeys, index);
+
+      log.info("All entities saved");
+
+      syncStatus.setSyncTime(mostRecentUpdate);
+      ofy().save().entity(syncStatus);
+    }
+    context.getHttpServletResponse().setContentType("text/plain");
+    context.getHttpServletResponse().getWriter().println(
+        "Processed events - " + eventsSeen + " of " + parsedEventKeys.size());
+    context.getHttpServletResponse().getWriter().println(
+        "Categories: " + categories.size());
+  }
 
   private static Multimap<String, String> eventTypeKeywordMap = HashMultimap.create();
 
@@ -111,111 +198,29 @@ public class EventParserServlet extends HttpServlet {
     eventTypeKeywordMap.putAll("yggdrasill", ImmutableList.of("yggdrasil"));
   }
 
-  @Override
-  protected void doGet(HttpServletRequest req, HttpServletResponse resp)
-      throws ServletException, IOException {
-
-    log.info("Got request for EventParser: " + RequestHelpers.asDebugString(req));
-
-    Multimap<String, String> parameters = RequestHelpers.parameterMultimap(req);
-
-    String year = Iterables.getFirst(parameters.get("year"), "2013");
-    boolean isFull = Boolean.valueOf(Iterables.getFirst(parameters.get("full"), "false"));
-
-    SyncStatus syncStatus = new Queries().getSyncStatus(Integer.parseInt(year));
-
-    log.info("Loading old event ids");
-
-    Map<String, Key<GenconEvent>> storedKeys = new HashMap<>();
-    int genconYear = syncStatus.getYear();
-    for (Key<GenconEvent> key : getStoredKeysForYear(genconYear)) {
-      storedKeys.put(key.getName(), key);
-    }
-
-    BufferedReader reader = loadGenconCsv(year, isFull);
-
-    final int eventsPerBatch = 100;
-    List<GenconEvent> events = new ArrayList<>(eventsPerBatch);
-    List<Document> documents = new ArrayList<>(eventsPerBatch);
-
-    IndexSpec indexSpec = IndexSpec.newBuilder().setName("events").build();
-    Index index = SearchServiceFactory.getSearchService().getIndex(indexSpec);
-    int eventsSeen = 0;
-
-    final Set<String> parsedEventKeys = new HashSet<>();
-    Map<String, GenconCategory> categories = new HashMap<>();
-
-    // Process the file, and update all events which have been updated since
-    // the most recent update we've seen in a file
-    DateTime mostRecentUpdate = syncStatus.getSyncTime();
-    for (GenconEvent parsedEvent : new Gencon2013ScheduleParser(reader)) {
-      String eventType = parsedEvent.getEventType();
-      if (!categories.containsKey(eventType)) {
-        categories.put(eventType, new GenconCategory(eventType, 2013));
-      }
-
-      categories.get(eventType).addEvent(parsedEvent);
-
-      parsedEventKeys.add(parsedEvent.getEventKey());
-      DateTime eventLastModified = parsedEvent.getLastModified();
-      if (eventLastModified.isAfter(syncStatus.getSyncTime())) {
-        events.add(parsedEvent);
-        documents.add(indexEvent(parsedEvent));
-        eventsSeen++;
-
-        if (eventLastModified.isAfter(mostRecentUpdate)) {
-          mostRecentUpdate = eventLastModified;
-        }
-      }
-
-      if (events.size() == eventsPerBatch) {
-        saveBatch(events, documents, index);
-
-        events = new ArrayList<>(eventsPerBatch);
-        documents = new ArrayList<>(eventsPerBatch);
-      }
-    }
-
-    log.info("Saving last entities.");
-
-    saveBatch(events, documents, index);
-
-    ofy().save().entities(categories.values()).now();
-
-    // Now to figure out which events to delete
-    // TODO: Once we have starred events, we'll need to notify people
-    markEventsDeleted(storedKeys, parsedEventKeys, index);
-
-    log.info("All entities saved");
-
-    syncStatus.setSyncTime(mostRecentUpdate);
-    ofy().save().entity(syncStatus);
-
-    resp.setContentType("text/plain");
-    resp.getWriter().println("Processed events - " + eventsSeen + " of " + parsedEventKeys.size());
-    resp.getWriter().println("Categories: " + categories.size());
-  }
-
   private void saveBatch(List<GenconEvent> events, List<Document> documents, Index index) {
     log.info("Writing out a batch of " + events.size() + "/" + documents.size());
     ofy().save().entities(events).now();
     index.put(documents);
   }
 
-  private void markEventsDeleted(Map<String, Key<GenconEvent>> storedKeys, final Set<String> parsedEventKeys, Index index) {
+  private void markEventsDeleted(DateTime updateTime, Map<String, Key<GenconEvent>> storedKeys,
+                                 final Set<String> parsedEventKeys, Index index) {
     Map<String, Key<GenconEvent>> deletedEventKeys =
         Maps.filterKeys(storedKeys, new Predicate<String>() {
           @Override
           public boolean apply(String key) {
-            return parsedEventKeys.contains(key);
+            return !parsedEventKeys.contains(key);
           }
         });
 
+    log.info("Deleting " + deletedEventKeys.size() + " of " + storedKeys.size());
     for (List<Key<GenconEvent>> removedKeys : Iterables.partition(deletedEventKeys.values(), 100)) {
       Set<String> docIdsToDelete = new HashSet<>();
       Collection<GenconEvent> eventsToDelete = ofy().load().keys(removedKeys).values();
       for (GenconEvent event : eventsToDelete) {
         event.setStatus(GenconEvent.Status.DEAD);
+        event.setLastModified(updateTime);
         docIdsToDelete.add(event.getEventKey());
       }
       ofy().save().entities(eventsToDelete);
@@ -223,24 +228,24 @@ public class EventParserServlet extends HttpServlet {
     }
   }
 
-  private QueryResultIterable<Key<GenconEvent>> getStoredKeysForYear(int genconYear) {
+  private QueryResultIterable<Key<GenconEvent>> getStoredKeysForYear(long genconYear) {
     return ofy().load().type(GenconEvent.class).filter("year", genconYear).keys().iterable();
   }
 
-  private BufferedReader loadGenconCsv(String year, boolean isFull) {
+  private BufferedReader loadGenconCsv(WebContext context, String year, boolean isFull) {
     BufferedReader reader = null;
     switch (year) {
       case "2013": {
-          String resourcePath = "/schedules/short_events.csv";
-          if (isFull) {
-            resourcePath = "/schedules/20130818003001.csv";
-          }
-
-          log.info("Parsing " + resourcePath);
-          reader = new BufferedReader(new InputStreamReader(
-              getServletContext().getResourceAsStream(resourcePath)));
+        String resourcePath = "/schedules/short_events.csv";
+        if (isFull) {
+          resourcePath = "/schedules/20130818003001.csv";
         }
-        break;
+
+        log.info("Parsing " + resourcePath);
+        reader = new BufferedReader(new InputStreamReader(
+            context.getServletContext().getResourceAsStream(resourcePath)));
+      }
+      break;
       default:
         throw new UnsupportedOperationException("Year not supported: " + year);
     }

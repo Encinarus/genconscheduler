@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 public class GenconEvent {
   @Id
   private String eventKey;
-  @Index private int year;
+  @Index private long year;
   private String gameId;
   @Index private Status status = Status.ALIVE;
   // Index the fields we'll want to query on.
@@ -429,7 +429,7 @@ public class GenconEvent {
         .toString();
   }
 
-  public int getYear() {
+  public long getYear() {
     return year;
   }
 

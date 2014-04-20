@@ -8,8 +8,11 @@ import com.lightpegasus.objectify.DurationLongValueTranslatorFactory;
 import com.lightpegasus.scheduler.gencon.entity.GenconCategory;
 import com.lightpegasus.scheduler.gencon.entity.GenconEvent;
 import com.lightpegasus.scheduler.gencon.entity.SearchQuery;
+import com.lightpegasus.scheduler.gencon.entity.SyncStatus;
 import com.lightpegasus.scheduler.web.controllers.CategoryListController;
+import com.lightpegasus.scheduler.web.controllers.DeleteGenconYearController;
 import com.lightpegasus.scheduler.web.controllers.EventDetailsController;
+import com.lightpegasus.scheduler.web.controllers.EventParserController;
 import com.lightpegasus.scheduler.web.controllers.SearchController;
 import com.lightpegasus.scheduler.web.controllers.StaticTemplateController;
 import com.lightpegasus.thymeleaf.ThymeleafController;
@@ -98,6 +101,11 @@ public class SchedulerApp {
         .add(new RequestPathController("/search", new SearchController()))
         // TODO(alek): Make a better default page which links to by category / by rule system etc
         .add(new RequestPathController("/", new CategoryListController()))
+
+        // TODO(alek): Add a filter limiting to admins
+        .add(new RequestPathController("/admin/deleteEvents", new DeleteGenconYearController()))
+        .add(new RequestPathController("/admin/parseEvents", new EventParserController()))
+
         .build();
 
     // Now setup the template engine
@@ -122,6 +130,7 @@ public class SchedulerApp {
     ObjectifyService.register(GenconEvent.class);
     ObjectifyService.register(GenconCategory.class);
     ObjectifyService.register(SearchQuery.class);
+    ObjectifyService.register(SyncStatus.class);
 
     log.info("Registered entities");
   }
