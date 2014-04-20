@@ -9,6 +9,7 @@ import com.googlecode.objectify.annotation.Cache;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
 import com.googlecode.objectify.annotation.Ignore;
+import com.googlecode.objectify.annotation.Index;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -26,7 +27,7 @@ public class GenconCategory {
 
   @Id private String key;
 
-  private int year;
+  @Index private int year;
   private String eventTypeAbbreviation;
   private String categoryName;
 

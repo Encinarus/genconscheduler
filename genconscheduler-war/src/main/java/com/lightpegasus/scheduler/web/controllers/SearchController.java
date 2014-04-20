@@ -79,7 +79,7 @@ public class SearchController implements ThymeleafController {
       for (Long clusterHash : clusteredEvents.keySet()) {
         Collection<GenconEvent> cluster = clusteredEvents.get(clusterHash);
         @SuppressWarnings("ConstantConditions")
-        int rank = eventRanking.get(Iterables.getFirst(cluster, null).getGameId());
+        int rank = eventRanking.get(Iterables.getFirst(cluster, null).getEventKey());
         results.add(new SearchResult(cluster, rank));
       }
     }

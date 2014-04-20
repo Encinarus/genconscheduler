@@ -236,9 +236,9 @@ public class EventParserController implements ThymeleafController {
     BufferedReader reader = null;
     switch (year) {
       case "2013": {
-        String resourcePath = "/schedules/short_events.csv";
+        String resourcePath = "/WEB-INF/schedules/short_events.csv";
         if (isFull) {
-          resourcePath = "/schedules/20130818003001.csv";
+          resourcePath = "/WEB-INF/schedules/20130818003001.csv";
         }
 
         log.info("Parsing " + resourcePath);
