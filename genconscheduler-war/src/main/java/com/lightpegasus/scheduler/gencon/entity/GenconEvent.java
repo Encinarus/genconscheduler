@@ -10,11 +10,9 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Duration;
 import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -23,19 +21,22 @@ import java.util.concurrent.TimeUnit;
  */
 @Entity
 @Cache
-public class Gencon2013Event {
-  @Id private String gameId;
-
+public class GenconEvent {
+  @Id
+  private String eventKey;
+  @Index private int year;
+  private String gameId;
+  @Index private Status status = Status.ALIVE;
   // Index the fields we'll want to query on.
   @Index private long clusterHash;
   @Index private String title;
-
   // This is the 3 or 4 letter code which represents the event type.
   @Index private String eventTypeAbbreviation;
-
-  /** References DateTimeConstants.MONDAY/TUESDAY/... with MONDAY=1 and SUNDAY=7 */
-  @Index private int dayOfWeek;
-
+  /**
+   * References DateTimeConstants.MONDAY/TUESDAY/... with MONDAY=1 and SUNDAY=7
+   */
+  @Index
+  private int dayOfWeek;
   private String group;
   private String eventType;
   private String shortDescription;
@@ -66,8 +67,22 @@ public class Gencon2013Event {
   private Integer ticketsAvailable;
   private DateTime lastModified;
 
-  public Gencon2013Event() {
+  public GenconEvent() {
 
+  }
+
+  public GenconEvent(int year, String gameId) {
+    this.year = year;
+    this.gameId = gameId;
+    this.eventKey = gameId + ":" + year;
+  }
+
+  public String getEventKey() {
+    return eventKey;
+  }
+
+  public void setStatus(Status status) {
+    this.status = status;
   }
 
   public void setTournament(Boolean isTournament) {
@@ -76,10 +91,6 @@ public class Gencon2013Event {
 
   public String getGameId() {
     return gameId;
-  }
-
-  public void setGameId(String gameId) {
-    this.gameId = gameId;
   }
 
   public String getGroup() {
@@ -118,13 +129,13 @@ public class Gencon2013Event {
     return eventType;
   }
 
-  public String getEventTypeAbbreviation() {
-    return eventTypeAbbreviation;
-  }
-
   public void setEventType(String eventType) {
     this.eventType = eventType;
     this.eventTypeAbbreviation = eventType.substring(0, eventType.indexOf(' '));
+  }
+
+  public String getEventTypeAbbreviation() {
+    return eventTypeAbbreviation;
   }
 
   public String getGameSystem() {
@@ -187,6 +198,11 @@ public class Gencon2013Event {
     return startTime;
   }
 
+  public void setStartTime(DateTime startTime) {
+    this.startTime = startTime;
+    this.dayOfWeek = startTime.getDayOfWeek();
+  }
+
   public String getReadableDate() {
 //    return DateTimeFormat.forPattern("EE MM/dd/yy")
     return DateTimeFormat.forPattern("EE")
@@ -198,11 +214,6 @@ public class Gencon2013Event {
     return DateTimeFormat.forPattern("hh:mm a")
         .withZone(DateTimeZone.forID("America/Indiana/Indianapolis"))
         .print(startTime);
-  }
-
-  public void setStartTime(DateTime startTime) {
-    this.startTime = startTime;
-    this.dayOfWeek = startTime.getDayOfWeek();
   }
 
   public Duration getDuration() {
@@ -217,14 +228,14 @@ public class Gencon2013Event {
     return endTime;
   }
 
+  public void setEndTime(DateTime endTime) {
+    this.endTime = endTime;
+  }
+
   public String getReadableEndTime() {
     return DateTimeFormat.forPattern("hh:mm a")
         .withZone(DateTimeZone.forID("America/Indiana/Indianapolis"))
         .print(endTime);
-  }
-
-  public void setEndTime(DateTime endTime) {
-    this.endTime = endTime;
   }
 
   public List<String> getGmNames() {
@@ -375,6 +386,7 @@ public class Gencon2013Event {
         .add("minimumPlayTime", minimumPlayTime)
         .add("cost", cost)
         .add("specialCategory", specialCategory)
+        .add("year", year)
         .toString()
         .hashCode();
   }
@@ -413,6 +425,15 @@ public class Gencon2013Event {
         .add("specialCategory", specialCategory)
         .add("ticketsAvailable", ticketsAvailable)
         .add("lastModified", lastModified)
+        .add("year", year)
         .toString();
+  }
+
+  public int getYear() {
+    return year;
+  }
+
+  public enum Status {
+    ALIVE, DEAD
   }
 }

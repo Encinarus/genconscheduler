@@ -1,9 +1,8 @@
 package com.lightpegasus.scheduler.web.controllers;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
-import com.lightpegasus.scheduler.gencon.entity.Gencon2013Event;
+import com.lightpegasus.scheduler.gencon.entity.GenconEvent;
 import com.lightpegasus.scheduler.gencon.entity.Queries;
 import com.lightpegasus.scheduler.servlet.RequestHelpers;
 import com.lightpegasus.thymeleaf.ThymeleafController;
@@ -24,14 +23,14 @@ public class EventDetailsController implements ThymeleafController {
 
     String eventId = Iterables.getFirst(parameters.get("eventId"), null);
 
-    Gencon2013Event event = null;
-    Collection<Gencon2013Event> relatedEvents = new ArrayList<>();
+    GenconEvent event = null;
+    Collection<GenconEvent> relatedEvents = new ArrayList<>();
     if(eventId != null) {
       Queries queries = new Queries();
-      event = queries.eventByEventId(eventId).orNull();
+      event = queries.loadGencon2013Event(eventId).orNull();
 
       if (event != null) {
-        relatedEvents = queries.eventsForHash(event);
+        relatedEvents = queries.loadSimilarGencon2013Events(event);
       }
     }
 

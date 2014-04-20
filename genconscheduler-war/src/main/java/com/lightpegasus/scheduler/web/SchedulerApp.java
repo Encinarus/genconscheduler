@@ -1,13 +1,12 @@
 package com.lightpegasus.scheduler.web;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Sets;
 import com.googlecode.objectify.ObjectifyService;
 import com.googlecode.objectify.impl.translate.opt.BigDecimalLongTranslatorFactory;
 import com.googlecode.objectify.impl.translate.opt.joda.JodaTimeTranslators;
 import com.lightpegasus.objectify.DurationLongValueTranslatorFactory;
-import com.lightpegasus.scheduler.gencon.entity.Gencon2013Category;
-import com.lightpegasus.scheduler.gencon.entity.Gencon2013Event;
+import com.lightpegasus.scheduler.gencon.entity.GenconCategory;
+import com.lightpegasus.scheduler.gencon.entity.GenconEvent;
 import com.lightpegasus.scheduler.gencon.entity.SearchQuery;
 import com.lightpegasus.scheduler.web.controllers.CategoryListController;
 import com.lightpegasus.scheduler.web.controllers.EventDetailsController;
@@ -19,8 +18,6 @@ import org.thymeleaf.templateresolver.ServletContextTemplateResolver;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
-import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
@@ -122,8 +119,8 @@ public class SchedulerApp {
     JodaTimeTranslators.add(ObjectifyService.factory());
 
     // Now register entities.
-    ObjectifyService.register(Gencon2013Event.class);
-    ObjectifyService.register(Gencon2013Category.class);
+    ObjectifyService.register(GenconEvent.class);
+    ObjectifyService.register(GenconCategory.class);
     ObjectifyService.register(SearchQuery.class);
 
     log.info("Registered entities");

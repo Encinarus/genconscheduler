@@ -18,13 +18,16 @@ import java.util.Set;
  */
 @Entity
 @Cache
-public class Gencon2013Category {
+public class GenconCategory {
   public static Set<String> CATEGORY_ABBREVIATIONS = Sets.newHashSet(
       "ANI", "BGM", "CGM", "EGM", "ENT", "FLM", "GEN", "HMN", "KID", "LRP", "MHE",
       "NMN", "RPG", "RPGA", "SEM", "SPA", "TCG", "TDA", "TRD", "WKS", "ZED"
   );
 
-  @Id private String eventTypeAbbreviation;
+  @Id private String key;
+
+  private int year;
+  private String eventTypeAbbreviation;
   private String categoryName;
 
   private Set<String> gameSystems;
@@ -34,12 +37,14 @@ public class Gencon2013Category {
   private int eventCount;
 
   @SuppressWarnings("UnusedDeclaration")
-  public Gencon2013Category() {
+  public GenconCategory() {
     // No-arg ctor needed for objectify
   }
 
-  public Gencon2013Category(String categoryName) {
+  public GenconCategory(String categoryName, int year) {
     this.eventTypeAbbreviation = categoryName.substring(0, categoryName.indexOf(' '));
+    this.year = year;
+    this.key = eventTypeAbbreviation + ":" + year;
     this.categoryName = categoryName;
     this.gameSystems = new HashSet<>();
     this.hashes = new HashSet<>();
@@ -49,7 +54,7 @@ public class Gencon2013Category {
     return eventTypeAbbreviation;
   }
 
-  public void addEvent(Gencon2013Event event) {
+  public void addEvent(GenconEvent event) {
     Preconditions.checkNotNull(event);
     Preconditions.checkArgument(Objects.equal(event.getEventType(), categoryName),
         "Event is for the wrong category, expected " + categoryName
@@ -72,16 +77,17 @@ public class Gencon2013Category {
       return false;
     }
 
-    Gencon2013Category that = (Gencon2013Category) o;
+    GenconCategory that = (GenconCategory) o;
 
     return Objects.equal(this.eventCount, that.eventCount)
         && Objects.equal(this.categoryName, that.categoryName)
-        && Objects.equal(this.gameSystems, that.gameSystems);
+        && Objects.equal(this.gameSystems, that.gameSystems)
+        && Objects.equal(this.year, that.year);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(categoryName, gameSystems, eventCount);
+    return Objects.hashCode(categoryName, gameSystems, eventCount, year);
   }
 
   @Override
@@ -90,6 +96,7 @@ public class Gencon2013Category {
         .add("categoryName", categoryName)
         .add("gameSystems", gameSystems)
         .add("eventCount", eventCount)
+        .add("year", year)
         .toString();
   }
 
@@ -103,5 +110,13 @@ public class Gencon2013Category {
 
   public int getEventCount() {
     return eventCount;
+  }
+
+  public int getYear() {
+    return year;
+  }
+
+  public String getKey() {
+    return key;
   }
 }

@@ -12,7 +12,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Ordering;
-import com.lightpegasus.scheduler.gencon.entity.Gencon2013Event;
+import com.lightpegasus.scheduler.gencon.entity.GenconEvent;
 import com.lightpegasus.scheduler.gencon.entity.SearchQuery;
 import com.lightpegasus.scheduler.servlet.RequestHelpers;
 import com.lightpegasus.thymeleaf.ThymeleafController;
@@ -47,6 +47,9 @@ public class SearchController implements ThymeleafController {
 
     String query = Iterables.getFirst(parameters.get("q"), null);
 
+    // Default to searching for 2013 events if year isn't supplied
+    String year = Iterables.getFirst(parameters.get("year"), "2013");
+
     IndexSpec indexSpec = IndexSpec.newBuilder().setName("events").build();
     Index index = SearchServiceFactory.getSearchService().getIndex(indexSpec);
 
@@ -57,7 +60,7 @@ public class SearchController implements ThymeleafController {
         .build();
     Results<ScoredDocument> documents = index.search(Query.newBuilder()
         .setOptions(options)
-        .build(query));
+        .build(query + " year:" + year));
 
     if (documents.getNumberFound() > 0) {
       // Convert the documents to events
@@ -67,14 +70,14 @@ public class SearchController implements ThymeleafController {
       }
 
       // Now cluster the events
-      Multimap<Long, Gencon2013Event> clusteredEvents = HashMultimap.create();
-      for (Gencon2013Event event :
-          ofy().load().type(Gencon2013Event.class).ids(eventRanking.keySet()).values()) {
+      Multimap<Long, GenconEvent> clusteredEvents = HashMultimap.create();
+      for (GenconEvent event :
+          ofy().load().type(GenconEvent.class).ids(eventRanking.keySet()).values()) {
         clusteredEvents.put(event.getClusterHash(), event);
       }
 
       for (Long clusterHash : clusteredEvents.keySet()) {
-        Collection<Gencon2013Event> cluster = clusteredEvents.get(clusterHash);
+        Collection<GenconEvent> cluster = clusteredEvents.get(clusterHash);
         @SuppressWarnings("ConstantConditions")
         int rank = eventRanking.get(Iterables.getFirst(cluster, null).getGameId());
         results.add(new SearchResult(cluster, rank));
@@ -101,15 +104,15 @@ public class SearchController implements ThymeleafController {
 
   public static class SearchResult {
     private final int rank;
-    private List<Gencon2013Event> clusteredEvents;
+    private List<GenconEvent> clusteredEvents;
 
-    public SearchResult(Collection<Gencon2013Event> events, int rank) {
+    public SearchResult(Collection<GenconEvent> events, int rank) {
       // Assumes all events in the cluster have the same cluster hash
-      ArrayList<Gencon2013Event> sortedEvents = Lists.newArrayList(events);
+      ArrayList<GenconEvent> sortedEvents = Lists.newArrayList(events);
       Collections.sort(sortedEvents,
-          new Comparator<Gencon2013Event>() {
+          new Comparator<GenconEvent>() {
             @Override
-            public int compare(Gencon2013Event o1, Gencon2013Event o2) {
+            public int compare(GenconEvent o1, GenconEvent o2) {
               return DateTimeComparator.getInstance().compare(o1.getStartTime(), o2.getStartTime());
             }
           });
@@ -117,7 +120,7 @@ public class SearchController implements ThymeleafController {
       this.rank = rank;
     }
 
-    public Gencon2013Event getEvent() {
+    public GenconEvent getEvent() {
       return clusteredEvents.get(0);
     }
 

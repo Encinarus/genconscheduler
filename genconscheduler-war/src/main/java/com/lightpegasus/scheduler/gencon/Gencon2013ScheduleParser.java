@@ -2,22 +2,20 @@ package com.lightpegasus.scheduler.gencon;
 
 import com.lightpegasus.csv.CsvParser;
 import com.lightpegasus.csv.CsvRow;
-import com.lightpegasus.scheduler.gencon.entity.Gencon2013Event;
+import com.lightpegasus.scheduler.gencon.entity.GenconEvent;
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.Reader;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
 /**
  * Parser for the Gencon Schedules
  */
-public class GenconSchedulerParser implements Iterable<Gencon2013Event>, Closeable {
+public class Gencon2013ScheduleParser implements Iterable<GenconEvent>, Closeable {
   private final CsvParser csvParser;
 
-  public GenconSchedulerParser(Reader input) throws IOException {
+  public Gencon2013ScheduleParser(Reader input) throws IOException {
     this.csvParser = new CsvParser(input);
   }
 
@@ -27,15 +25,15 @@ public class GenconSchedulerParser implements Iterable<Gencon2013Event>, Closeab
   }
 
   @Override
-  public Iterator<Gencon2013Event> iterator() {
-    return new Iterator<Gencon2013Event>(){
+  public Iterator<GenconEvent> iterator() {
+    return new Iterator<GenconEvent>(){
       @Override
       public boolean hasNext() {
         return csvParser.hasNext();
       }
 
       @Override
-      public Gencon2013Event next() {
+      public GenconEvent next() {
         return nextEvent();
       }
 
@@ -46,12 +44,11 @@ public class GenconSchedulerParser implements Iterable<Gencon2013Event>, Closeab
     };
   }
 
-  private Gencon2013Event nextEvent() {
+  private GenconEvent nextEvent() {
     CsvRow row = csvParser.next();
 
     // Convert to event
-    Gencon2013Event event = new Gencon2013Event();
-    event.setGameId(row.stringField("Game ID"));
+    GenconEvent event = new GenconEvent(2013, row.stringField("Game ID"));
     event.setGroup(row.stringField("Group"));
     event.setTitle(row.stringField("Title"));
     event.setShortDescription(row.stringField("Short Description"));
