@@ -5,11 +5,11 @@
 <head>
   <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css"/>
   <link type="text/css" rel="stylesheet" href="/static/stylesheets/main.css"/>
-  <title>Core Features</title>
+  <title>User Preferences</title>
 </head>
 
 <body>
-<div class="navbar navbar-default navbar-fixed-top" role="navigation" th:fragment="topnav">
+<div class="navbar navbar-default navbar-fixed-top" role="navigation" th:replace="core :: topnav">
   <div class="container-fluid">
     <div class="navbar-header">
       <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
@@ -18,25 +18,38 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="/">Gen Con 2013 Scheduler</a>
+      <a class="navbar-brand" href="#">Gen Con 2013 Scheduler</a>
     </div>
     <div class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-        <!-- TODO: Dropdown with stuff for the user if they're logged in. -->
-        <li><a href="/login" th:href="@{${authUrl}}"><span th:text="${authText}">Sign in</span></a></li>
-        <li><a href="/browse/categories">Browse By Type</a></li>
+        <li class="active"><a href="#">Home</a></li>
+        <li><a href="#about">About</a></li>
       </ul>
-      <form class="navbar-form navbar-right" action="/search">
-        <input type="text" class="form-control" style="min-width: 300px;" placeholder="Search..." name="q"/>
+      <form class="navbar-form navbar-right col-sm-6" action="/search">
+        <input type="text" class="form-control" style="min-width: 300px;" placeholder="Search..." />
       </form>
     </div><!--/.nav-collapse -->
   </div>
 </div>
 
-<div class="container-fluid" th:fragment="pagefooter">
-  <a href="/about">About</a>
+<div class="container-fluid">
+  <div class="row">
+    <div class="main">
+      <h1 class="page-header">User Preferences</h1>
+      <div class="col-md-12 col-sm-12">
+        <form>
+          <div class="form-group">
+            <input type="checkbox"
+                   id="wantsEmail" name="wantsEmail"
+                   th:checked="${user.wantsEmail}"/> Allow scheduler to send you email.
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 </div>
 
+<div th:replace="core :: pagefooter">I did this!</div>
 <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
 <script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
 </body>

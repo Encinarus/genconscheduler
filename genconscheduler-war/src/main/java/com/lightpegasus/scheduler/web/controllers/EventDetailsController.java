@@ -1,27 +1,26 @@
 package com.lightpegasus.scheduler.web.controllers;
 
+import com.google.common.base.Optional;
+import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Multimap;
 import com.lightpegasus.scheduler.gencon.entity.GenconEvent;
 import com.lightpegasus.scheduler.gencon.Queries;
-import com.lightpegasus.scheduler.web.RequestHelpers;
+import com.lightpegasus.scheduler.gencon.entity.User;
 import com.lightpegasus.thymeleaf.ThymeleafController;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.WebContext;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
-/**
- *
- */
-public class EventDetailsController implements ThymeleafController {
+public class EventDetailsController extends ThymeleafController {
   @Override
-  public void process(WebContext context, TemplateEngine engine) throws Exception {
-    Multimap<String, String> parameters =
-        RequestHelpers.parameterMultimap(context.getHttpServletRequest());
+  public void doProcess(WebContext context, TemplateEngine engine, Optional<User> loggedInUser) throws Exception {
+    String requestURI = context.getHttpServletRequest().getRequestURI();
+    List<String> splitUrl = Splitter.on("/").omitEmptyStrings().splitToList(requestURI);
 
-    String eventId = Iterables.getFirst(parameters.get("eventId"), null);
+    String eventId = Iterables.getLast(splitUrl);
 
     GenconEvent event = null;
     Collection<GenconEvent> relatedEvents = new ArrayList<>();

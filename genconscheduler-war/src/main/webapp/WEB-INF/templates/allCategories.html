@@ -34,13 +34,13 @@
 
 <div class="container-fluid">
   <div class="row">
-    <div class="col-sm-9 col-md-10 main">
+    <div class="col-sm-12 col-md-12 main">
       <h1 class="page-header">Events by type</h1>
 
       <div class="row" th:each="row : ${rows}">
-        <div class="col-md-6" style="padding-bottom: 5px" th:each="category : ${row}">
+        <div class="col-md-6 col-sm-12" style="padding-bottom: 5px" th:each="category : ${row}">
           <a class="btn btn-default text-left"
-             href="#" th:href="@{'/search?q=category:' + ${category.eventTypeAbbreviation}}"
+             href="#" th:href="@{'/categoryDetails/' + ${category.eventTypeAbbreviation}}"
              role="button"
              style="width:100%; white-space:normal"><span th:text="${category.categoryName}">TRD - Trade Day Event!</span>
              <span class="badge" th:text="${category.eventCount}">10</span></a>
@@ -72,6 +72,7 @@
   </div>
 </div>
 
+<div th:replace="core :: pagefooter">I did this!</div>
 <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
 <script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
 </body>

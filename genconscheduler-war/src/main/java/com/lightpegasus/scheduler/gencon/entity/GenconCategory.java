@@ -1,7 +1,7 @@
 package com.lightpegasus.scheduler.gencon.entity;
 
-import com.google.appengine.labs.repackaged.com.google.common.base.Preconditions;
 import com.google.common.base.Objects;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;

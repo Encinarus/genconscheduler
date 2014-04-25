@@ -1,5 +1,7 @@
 package com.lightpegasus.scheduler.web.controllers;
 
+import com.google.common.base.Optional;
+import com.lightpegasus.scheduler.gencon.entity.User;
 import com.lightpegasus.thymeleaf.ThymeleafController;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.WebContext;
@@ -7,7 +9,7 @@ import org.thymeleaf.context.WebContext;
 /**
  * Simply renders a template without needing to do any additional datastore reads.
  */
-public class StaticTemplateController implements ThymeleafController {
+public class StaticTemplateController extends ThymeleafController {
 
   private final String templateName;
 
@@ -16,7 +18,7 @@ public class StaticTemplateController implements ThymeleafController {
   }
 
   @Override
-  public void process(WebContext context, TemplateEngine engine) throws Exception {
+  public void doProcess(WebContext context, TemplateEngine engine, Optional<User> loggedInUser) throws Exception {
     engine.process(templateName, context, context.getHttpServletResponse().getWriter());
   }
 }

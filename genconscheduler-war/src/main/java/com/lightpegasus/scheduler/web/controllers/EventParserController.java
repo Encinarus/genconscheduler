@@ -6,6 +6,7 @@ import com.google.appengine.api.search.Field;
 import com.google.appengine.api.search.Index;
 import com.google.appengine.api.search.IndexSpec;
 import com.google.appengine.api.search.SearchServiceFactory;
+import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.collect.HashMultimap;
@@ -16,10 +17,11 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.googlecode.objectify.Key;
 import com.lightpegasus.scheduler.gencon.Gencon2013ScheduleParser;
+import com.lightpegasus.scheduler.gencon.entity.BackgroundTaskStatus;
 import com.lightpegasus.scheduler.gencon.entity.GenconCategory;
 import com.lightpegasus.scheduler.gencon.entity.GenconEvent;
 import com.lightpegasus.scheduler.gencon.Queries;
-import com.lightpegasus.scheduler.gencon.entity.SyncStatus;
+import com.lightpegasus.scheduler.gencon.entity.User;
 import com.lightpegasus.scheduler.web.RequestHelpers;
 import com.lightpegasus.thymeleaf.ThymeleafController;
 import org.joda.time.DateTime;
@@ -42,11 +44,11 @@ import static com.googlecode.objectify.ObjectifyService.ofy;
 /**
  *
  */
-public class EventParserController implements ThymeleafController {
+public class EventParserController extends ThymeleafController {
   private static Logger log = Logger.getLogger(EventParserController.class.getSimpleName());
 
   @Override
-  public void process(WebContext context, TemplateEngine engine) throws Exception {
+  public void doProcess(WebContext context, TemplateEngine engine, Optional<User> loggedInUser) throws Exception {
     log.info("Got request for EventParser: " +
         RequestHelpers.asDebugString(context.getHttpServletRequest()));
 
@@ -56,7 +58,7 @@ public class EventParserController implements ThymeleafController {
     String year = Iterables.getFirst(parameters.get("year"), "2013");
     boolean isFull = Boolean.valueOf(Iterables.getFirst(parameters.get("full"), "false"));
 
-    SyncStatus syncStatus = new Queries().getSyncStatus(Integer.parseInt(year));
+    BackgroundTaskStatus syncStatus = new Queries().getSyncStatus(Integer.parseInt(year));
 
     log.info("Loading old event ids");
 

@@ -36,9 +36,8 @@
 <div class="container-fluid">
   <div class="row">
     <div class="main">
-      <h1 class="page-header">Search Results <small><a href="/fullSearch">(Advanced Search)</a></small></h1>
-      <h4 th:text="${query}">category:ANI</h4>
-      <div class="list-group" th:fragment="results">
+      <h1 class="page-header">Category Listing <small th:text="${category}">ANI</small></h1>
+      <div class="list-group" th:replace="searchResults :: results">
         <a href="#" th:each="result : ${results}"
            th:href="@{'/eventDetails/' + ${result.event.gameId}}"
            class="list-group-item">

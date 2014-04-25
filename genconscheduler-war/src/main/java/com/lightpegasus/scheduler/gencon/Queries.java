@@ -4,9 +4,9 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.googlecode.objectify.Objectify;
 import com.googlecode.objectify.ObjectifyService;
+import com.lightpegasus.scheduler.gencon.entity.BackgroundTaskStatus;
 import com.lightpegasus.scheduler.gencon.entity.GenconCategory;
 import com.lightpegasus.scheduler.gencon.entity.GenconEvent;
-import com.lightpegasus.scheduler.gencon.entity.SyncStatus;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,10 +27,10 @@ public class Queries {
   public Queries() {
   }
 
-  public SyncStatus getSyncStatus(int year) {
-    SyncStatus status = ofy().load().type(SyncStatus.class).id(year).now();
+  public BackgroundTaskStatus getSyncStatus(int year) {
+    BackgroundTaskStatus status = ofy().load().type(BackgroundTaskStatus.class).id(year).now();
     if (status == null) {
-      status = new SyncStatus(year);
+      status = new BackgroundTaskStatus(year, BackgroundTaskStatus.TaskType.UPDATE_EVENTS);
       ofy().save().entity(status);
     }
     return status;

@@ -62,7 +62,7 @@
     <dependency>
       <groupId>com.googlecode.objectify</groupId>
       <artifactId>objectify</artifactId>
-      <version>4.0b3</version>
+      <version>5.0.1</version>
     </dependency>
 
     <dependency>

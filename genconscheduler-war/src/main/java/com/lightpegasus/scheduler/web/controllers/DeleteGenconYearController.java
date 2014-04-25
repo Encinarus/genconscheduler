@@ -3,14 +3,14 @@ package com.lightpegasus.scheduler.web.controllers;
 import com.google.appengine.api.search.Index;
 import com.google.appengine.api.search.IndexSpec;
 import com.google.appengine.api.search.SearchServiceFactory;
+import com.google.common.base.Optional;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import com.googlecode.objectify.Key;
-import com.googlecode.objectify.cmd.LoadType;
 import com.googlecode.objectify.cmd.Query;
-import com.googlecode.objectify.cmd.QueryKeys;
 import com.lightpegasus.scheduler.gencon.entity.GenconCategory;
 import com.lightpegasus.scheduler.gencon.entity.GenconEvent;
+import com.lightpegasus.scheduler.gencon.entity.User;
 import com.lightpegasus.scheduler.web.RequestHelpers;
 import com.lightpegasus.thymeleaf.ThymeleafController;
 import org.thymeleaf.TemplateEngine;
@@ -25,11 +25,11 @@ import static com.googlecode.objectify.ObjectifyService.ofy;
 /**
  *
  */
-public class DeleteGenconYearController implements ThymeleafController {
+public class DeleteGenconYearController extends ThymeleafController {
   private static Logger logger = Logger.getLogger(DeleteGenconYearController.class.getSimpleName());
 
   @Override
-  public void process(WebContext context, TemplateEngine engine) throws Exception {
+  public void doProcess(WebContext context, TemplateEngine engine, Optional<User> loggedInUser) throws Exception {
     int totalEventsDeleted = 0;
 
     IndexSpec indexSpec = IndexSpec.newBuilder().setName("events").build();
