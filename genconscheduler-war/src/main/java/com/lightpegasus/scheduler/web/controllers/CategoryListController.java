@@ -5,7 +5,7 @@ import com.google.common.collect.Iterables;
 import com.lightpegasus.scheduler.gencon.entity.GenconCategory;
 import com.lightpegasus.scheduler.gencon.Queries;
 import com.lightpegasus.scheduler.gencon.entity.User;
-import com.lightpegasus.thymeleaf.ThymeleafController;
+import com.lightpegasus.scheduler.web.ThymeleafController;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.WebContext;
 

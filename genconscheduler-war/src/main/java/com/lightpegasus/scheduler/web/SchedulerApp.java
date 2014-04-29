@@ -18,7 +18,6 @@ import com.lightpegasus.scheduler.web.controllers.EventParserController;
 import com.lightpegasus.scheduler.web.controllers.SearchController;
 import com.lightpegasus.scheduler.web.controllers.StaticTemplateController;
 import com.lightpegasus.scheduler.web.controllers.UserPreferencesController;
-import com.lightpegasus.thymeleaf.ThymeleafController;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.templateresolver.ServletContextTemplateResolver;
 

@@ -1,6 +1,5 @@
 package com.lightpegasus.scheduler.web;
 
-import com.lightpegasus.thymeleaf.ThymeleafController;
 import org.thymeleaf.context.WebContext;
 
 import javax.servlet.Filter;

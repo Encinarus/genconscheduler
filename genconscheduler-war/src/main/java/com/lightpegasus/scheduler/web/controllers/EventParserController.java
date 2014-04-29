@@ -23,7 +23,7 @@ import com.lightpegasus.scheduler.gencon.entity.GenconEvent;
 import com.lightpegasus.scheduler.gencon.Queries;
 import com.lightpegasus.scheduler.gencon.entity.User;
 import com.lightpegasus.scheduler.web.RequestHelpers;
-import com.lightpegasus.thymeleaf.ThymeleafController;
+import com.lightpegasus.scheduler.web.ThymeleafController;
 import org.joda.time.DateTime;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.WebContext;

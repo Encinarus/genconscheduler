@@ -1,4 +1,4 @@
-package com.lightpegasus.thymeleaf;
+package com.lightpegasus.scheduler.web;
 
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
