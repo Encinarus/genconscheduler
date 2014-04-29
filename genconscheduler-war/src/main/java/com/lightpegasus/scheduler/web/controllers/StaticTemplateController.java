@@ -18,7 +18,8 @@ public class StaticTemplateController extends ThymeleafController {
   }
 
   @Override
-  public void doProcess(WebContext context, TemplateEngine engine, Optional<User> loggedInUser) throws Exception {
+  public void doProcess(WebContext context, TemplateEngine engine, Optional<User> loggedInUser,
+      int genconYear) throws Exception {
     engine.process(templateName, context, context.getHttpServletResponse().getWriter());
   }
 }

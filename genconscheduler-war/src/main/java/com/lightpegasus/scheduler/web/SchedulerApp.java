@@ -22,6 +22,8 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.templateresolver.ServletContextTemplateResolver;
 
 import javax.servlet.http.HttpServletRequest;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -31,6 +33,16 @@ import java.util.regex.Pattern;
  * general config of the app.
  */
 public class SchedulerApp {
+  public static String buildUrl(int year, String path) {
+    // TODO(alek): How can I make this visible in the templates?
+    try {
+      return new URL("/" + year + "/" + path).getPath();
+    } catch (MalformedURLException e) {
+      throw new RuntimeException(
+          "Unable to form url from year and path: " + year + ", " + path + "}", e);
+    }
+  }
+
   private static Logger log = Logger.getLogger(SchedulerApp.class.getSimpleName());
 
   static {
@@ -120,6 +132,7 @@ public class SchedulerApp {
     templateResolver.setSuffix(".html");
 
     templateEngine = new TemplateEngine();
+
     templateEngine.setTemplateResolver(templateResolver);
   }
 

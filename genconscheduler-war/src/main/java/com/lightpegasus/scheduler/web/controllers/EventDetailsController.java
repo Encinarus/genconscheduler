@@ -16,7 +16,8 @@ import java.util.List;
 
 public class EventDetailsController extends ThymeleafController {
   @Override
-  public void doProcess(WebContext context, TemplateEngine engine, Optional<User> loggedInUser) throws Exception {
+  public void doProcess(WebContext context, TemplateEngine engine, Optional<User> loggedInUser,
+      int genconYear) throws Exception {
     String requestURI = context.getHttpServletRequest().getRequestURI();
     List<String> splitUrl = Splitter.on("/").omitEmptyStrings().splitToList(requestURI);
 
@@ -26,10 +27,10 @@ public class EventDetailsController extends ThymeleafController {
     Collection<GenconEvent> relatedEvents = new ArrayList<>();
     if(eventId != null) {
       Queries queries = new Queries();
-      event = queries.loadGencon2013Event(eventId).orNull();
+      event = queries.loadGenconEvent(eventId, genconYear).orNull();
 
       if (event != null) {
-        relatedEvents = queries.loadSimilarGencon2013Events(event);
+        relatedEvents = queries.loadSimilarEvents(event);
       }
     }
 

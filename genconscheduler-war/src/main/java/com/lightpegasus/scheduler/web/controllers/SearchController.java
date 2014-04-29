@@ -35,14 +35,12 @@ public class SearchController extends ThymeleafController {
   private static Logger log = Logger.getLogger(SearchController.class.getSimpleName());
 
   @Override
-  public void doProcess(WebContext context, TemplateEngine engine, Optional<User> loggedInUser) throws Exception {
+  public void doProcess(WebContext context, TemplateEngine engine, Optional<User> loggedInUser,
+      int genconYear) throws Exception {
     Multimap<String, String> parameters =
         RequestHelpers.parameterMultimap(context.getHttpServletRequest());
 
     String query = Iterables.getFirst(parameters.get("q"), null);
-
-    // Default to searching for 2013 events if year isn't supplied
-    String year = Iterables.getFirst(parameters.get("year"), "2013");
 
     IndexSpec indexSpec = IndexSpec.newBuilder().setName("events").build();
     Index index = SearchServiceFactory.getSearchService().getIndex(indexSpec);
@@ -54,7 +52,7 @@ public class SearchController extends ThymeleafController {
         .build();
     Results<ScoredDocument> documents = index.search(Query.newBuilder()
         .setOptions(options)
-        .build(query + " year:" + year));
+        .build(query + " year:" + genconYear));
 
     Collection<GenconEvent> foundEvents = ImmutableList.of();
 

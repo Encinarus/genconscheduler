@@ -19,7 +19,8 @@ import static com.googlecode.objectify.ObjectifyService.ofy;
 public class CategoryDetailsController extends ThymeleafController {
 
   @Override
-  protected void doProcess(WebContext context, TemplateEngine engine, Optional<User> loggedInUser) throws Exception {
+  protected void doProcess(WebContext context, TemplateEngine engine,
+                           Optional<User> loggedInUser, int genconYear) throws Exception {
     String requestURI = context.getHttpServletRequest().getRequestURI();
     List<String> splitUrl = Splitter.on("/").omitEmptyStrings().splitToList(requestURI);
 
@@ -27,7 +28,7 @@ public class CategoryDetailsController extends ThymeleafController {
 
     List<GenconEvent> categoryEvents = ofy().load().type(GenconEvent.class)
         .filter("eventTypeAbbreviation", category)
-        .filter("year", 2013)
+        .filter("year", genconYear)
         .list();
 
     context.setVariable("results", composeSearchResults(categoryEvents));

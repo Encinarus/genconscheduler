@@ -16,10 +16,11 @@ import java.util.List;
  */
 public class CategoryListController extends ThymeleafController {
   @Override
-  public void doProcess(WebContext context, TemplateEngine engine, Optional<User> loggedInUser) throws Exception {
+  public void doProcess(WebContext context, TemplateEngine engine, Optional<User> loggedInUser,
+      int genconYear) throws Exception {
     Queries queries = new Queries();
 
-    List<GenconCategory> categories = queries.allCategories();
+    List<GenconCategory> categories = queries.allCategories(genconYear);
     int rowWidth = 2;
     Iterable<List<GenconCategory>> rows = Iterables.partition(categories, rowWidth);
 

@@ -6,6 +6,7 @@ import com.google.appengine.api.search.Field;
 import com.google.appengine.api.search.Index;
 import com.google.appengine.api.search.IndexSpec;
 import com.google.appengine.api.search.SearchServiceFactory;
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
@@ -16,7 +17,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.googlecode.objectify.Key;
-import com.lightpegasus.scheduler.gencon.Gencon2013ScheduleParser;
+import com.lightpegasus.scheduler.gencon.GenconScheduleParser;
 import com.lightpegasus.scheduler.gencon.entity.BackgroundTaskStatus;
 import com.lightpegasus.scheduler.gencon.entity.GenconCategory;
 import com.lightpegasus.scheduler.gencon.entity.GenconEvent;
@@ -31,6 +32,7 @@ import org.thymeleaf.context.WebContext;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -48,22 +50,21 @@ public class EventParserController extends ThymeleafController {
   private static Logger log = Logger.getLogger(EventParserController.class.getSimpleName());
 
   @Override
-  public void doProcess(WebContext context, TemplateEngine engine, Optional<User> loggedInUser) throws Exception {
+  public void doProcess(WebContext context, TemplateEngine engine, Optional<User> loggedInUser,
+      int genconYear) throws Exception {
     log.info("Got request for EventParser: " +
         RequestHelpers.asDebugString(context.getHttpServletRequest()));
 
     Multimap<String, String> parameters = RequestHelpers.parameterMultimap(
         context.getHttpServletRequest());
 
-    String year = Iterables.getFirst(parameters.get("year"), "2013");
     boolean isFull = Boolean.valueOf(Iterables.getFirst(parameters.get("full"), "false"));
 
-    BackgroundTaskStatus syncStatus = new Queries().getSyncStatus(Integer.parseInt(year));
+    BackgroundTaskStatus syncStatus = new Queries().getSyncStatus(genconYear);
 
     log.info("Loading old event ids");
 
     ImmutableMap.Builder<String, Key<GenconEvent>> storedKeyBuilder = ImmutableMap.builder();
-    long genconYear = syncStatus.getYear();
     for (Key<GenconEvent> key : getStoredKeysForYear(genconYear)) {
       storedKeyBuilder.put(key.getName(), key);
     }
@@ -73,7 +74,7 @@ public class EventParserController extends ThymeleafController {
     final Set<String> parsedEventKeys = new HashSet<>();
     final Map<String, GenconCategory> categories = new HashMap<>();
 
-    try (BufferedReader reader = loadGenconCsv(context, year, isFull)) {
+    try (BufferedReader reader = loadGenconCsv(context, genconYear, isFull)) {
       final int eventsPerBatch = 100;
       List<GenconEvent> eventsToSave = new ArrayList<>(eventsPerBatch);
       List<Document> docsToSave = new ArrayList<>(eventsPerBatch);
@@ -84,10 +85,10 @@ public class EventParserController extends ThymeleafController {
       // Process the file, and update all events which have been updated since
       // the most recent update we've seen in a file
       DateTime mostRecentUpdate = syncStatus.getSyncTime();
-      for (GenconEvent event : new Gencon2013ScheduleParser(reader)) {
+      for (GenconEvent event : new GenconScheduleParser(reader, genconYear)) {
         String eventType = event.getEventType();
         if (!categories.containsKey(eventType)) {
-          categories.put(eventType, new GenconCategory(eventType, 2013));
+          categories.put(eventType, new GenconCategory(eventType, genconYear));
         }
 
         categories.get(eventType).addEvent(event);
@@ -137,67 +138,82 @@ public class EventParserController extends ThymeleafController {
 
   private static Multimap<String, String> eventTypeKeywordMap = HashMultimap.create();
 
+  private static void addKeywords(String eventTitle, String... keywords) {
+    eventTypeKeywordMap.putAll(eventTitle.toLowerCase(),
+        Iterables.transform(Arrays.asList(keywords), new Function<String, String>() {
+          @Override public String apply(String input) {
+            return input.toLowerCase();
+          }}));
+  }
   static {
-    eventTypeKeywordMap.putAll("magic: the gathering", ImmutableList.of("mtg", "wizards of the coast", "wotc"));
-    eventTypeKeywordMap.putAll("magic", ImmutableList.of("mtg", "magic the gathering", "wizards of the coast", "wotc"));
+    addKeywords("magic: the gathering",
+        "mtg", "wizards of the coast", "wotc");
+    addKeywords("magic",
+        "mtg", "magic the gathering", "wizards of the coast", "wotc");
 
-    eventTypeKeywordMap.putAll("a game of thrones", ImmutableList.of("got", "song of ice & fire"));
-    eventTypeKeywordMap.putAll("a game of thrones: the board game", ImmutableList.of("got", "song of ice & fire"));
-    eventTypeKeywordMap.putAll("song of ice & fire", ImmutableList.of("got", "song of ice & fire", "a game of thrones"));
+    addKeywords("a game of thrones",
+        "got", "song of ice & fire");
+    addKeywords("a game of thrones: the board game",
+        "got", "song of ice & fire");
+    addKeywords("song of ice & fire",
+        "got", "song of ice & fire", "a game of thrones");
 
-    eventTypeKeywordMap.putAll("babylon 5: a call to arms", ImmutableList.of("b5"));
-    eventTypeKeywordMap.putAll("cards against humanity", ImmutableList.of("cah"));
+    addKeywords("babylon 5: a call to arms", "b5");
+    addKeywords("cards against humanity", "cah");
     // catan!!!
-    eventTypeKeywordMap.putAll("catan: traders and barbarians", ImmutableList.of("settlers of catan"));
-    eventTypeKeywordMap.putAll("catan dice game", ImmutableList.of("settlers of catan"));
-    eventTypeKeywordMap.putAll("catan histories: merchants of europe", ImmutableList.of("settlers of catan"));
-    eventTypeKeywordMap.putAll("catan junior", ImmutableList.of("settlers of catan"));
-    eventTypeKeywordMap.putAll("catan: explorers and pirates", ImmutableList.of("settlers of catan"));
-    eventTypeKeywordMap.putAll("catan: seafarers", ImmutableList.of("settlers of catan"));
-    eventTypeKeywordMap.putAll("catan: traders and barbarians", ImmutableList.of("settlers of catan"));
+    String[] settlersKeywords = {"settlers of catan"};
+    addKeywords("catan: traders and barbarians", settlersKeywords);
+    addKeywords("catan dice game", settlersKeywords);
+    addKeywords("catan histories: merchants of europe", settlersKeywords);
+    addKeywords("catan junior", settlersKeywords);
+    addKeywords("catan: explorers and pirates", settlersKeywords);
+    addKeywords("catan: seafarers", settlersKeywords);
+    addKeywords("catan: traders and barbarians", settlersKeywords);
 
     // D&D
-    eventTypeKeywordMap.putAll("d&d gamma world roleplaying game", ImmutableList.of("d&d", "dungeons and dragons", "rpg", "d20", "wizards of the coast", "wotc"));
-    eventTypeKeywordMap.putAll("d&d miniatures", ImmutableList.of("d&d", "dungeons and dragons", "rpg", "d20", "wizards of the coast", "wotc"));
-    eventTypeKeywordMap.putAll("dungeon & dragons", ImmutableList.of("d&d", "dungeons and dragons", "rpg", "d20", "wizards of the coast", "wotc"));
-    eventTypeKeywordMap.putAll("dungeons & dragons", ImmutableList.of("d&d", "dungeons and dragons", "rpg", "d20", "wizards of the coast", "wotc"));
+    String[] dndKeywords = {
+        "d&d", "dungeons and dragons", "rpg", "d20", "wizards of the coast", "wotc"};
+    addKeywords("d&d gamma world roleplaying game", dndKeywords);
+    addKeywords("d&d miniatures", dndKeywords);
+    addKeywords("dungeon & dragons", dndKeywords);
+    addKeywords("dungeons & dragons", dndKeywords);
 
-    eventTypeKeywordMap.putAll("kobolds ate my baby!", ImmutableList.of("kamb"));
-    eventTypeKeywordMap.putAll("legend of the five rings", ImmutableList.of("l5r"));
+    addKeywords("kobolds ate my baby!", "kamb");
+    addKeywords("legend of the five rings", "l5r");
 
-    eventTypeKeywordMap.putAll("lord of the rings", ImmutableList.of("lotr"));
-    eventTypeKeywordMap.putAll("the hobbit card game", ImmutableList.of("lotr", "lord of the rings"));
-    eventTypeKeywordMap.putAll("the hobbit: the defeat of smaug", ImmutableList.of("lotr", "lord of the rings"));
-    eventTypeKeywordMap.putAll("lord of the rings tradeable miniatures", ImmutableList.of("lotr"));
-    eventTypeKeywordMap.putAll("lord of the rings: the card game", ImmutableList.of("lotr"));
-    eventTypeKeywordMap.putAll("the lord of the rings: the battle for middle-earth", ImmutableList.of("lotr"));
-    eventTypeKeywordMap.putAll("the lord of the rings: the card game", ImmutableList.of("lotr"));
-    eventTypeKeywordMap.putAll("lord of the rings: the fellowship of the ring dbg", ImmutableList.of("lotr"));
-    eventTypeKeywordMap.putAll("middle-earth role playing", ImmutableList.of("lotr", "middle earth"));
-    eventTypeKeywordMap.putAll("meccg", ImmutableList.of("middle", "earth", "ccg", "collectable card game"));
+    addKeywords("lord of the rings", "lotr");
+    addKeywords("the hobbit card game", "lotr", "lord of the rings");
+    addKeywords("the hobbit: the defeat of smaug", "lotr", "lord of the rings");
+    addKeywords("lord of the rings tradeable miniatures", "lotr");
+    addKeywords("lord of the rings: the card game", "lotr");
+    addKeywords("the lord of the rings: the battle for middle-earth", "lotr");
+    addKeywords("the lord of the rings: the card game", "lotr");
+    addKeywords("lord of the rings: the fellowship of the ring dbg", "lotr");
+    addKeywords("middle-earth role playing", "lotr", "middle earth");
+    addKeywords("meccg", "middle", "earth", "ccg", "collectable card game");
 
-    eventTypeKeywordMap.putAll("pathfinder", ImmutableList.of("paizo", "dungeons and dragons", "d&d"));
-    eventTypeKeywordMap.putAll("pathfinder roleplaying  game", ImmutableList.of("paizo", "dungeons and dragons", "d&d"));
-    eventTypeKeywordMap.putAll("pathfinder roleplaying game", ImmutableList.of("paizo", "dungeons and dragons", "d&d"));
-    eventTypeKeywordMap.putAll("spacehulk", ImmutableList.of("space hulk"));
-    eventTypeKeywordMap.putAll("space hulk", ImmutableList.of("spacehulk"));
-    eventTypeKeywordMap.putAll("star trek: deep space nine", ImmutableList.of("ds9", "9"));
+    addKeywords("pathfinder", "paizo", "dungeons and dragons", "d&d");
+    addKeywords("pathfinder roleplaying  game", "paizo", "dungeons and dragons", "d&d");
+    addKeywords("pathfinder roleplaying game", "paizo", "dungeons and dragons", "d&d");
+    addKeywords("spacehulk", "space hulk");
+    addKeywords("space hulk", "spacehulk");
+    addKeywords("star trek: deep space nine", "ds9", "9");
 
-    eventTypeKeywordMap.putAll("super smash bros. brawl", ImmutableList.of("ssbb", "smash brothers"));
-    eventTypeKeywordMap.putAll("super smash bros. melee", ImmutableList.of("ssbm", "smash brothers"));
-    eventTypeKeywordMap.putAll("super smash brothers brawl", ImmutableList.of("ssbb", "bros"));
-    eventTypeKeywordMap.putAll("super smash brothers melee", ImmutableList.of("ssbm", "bros"));
+    addKeywords("super smash bros. brawl", "ssbb", "smash brothers");
+    addKeywords("super smash bros. melee", "ssbm", "smash brothers");
+    addKeywords("super smash brothers brawl", "ssbb", "bros");
+    addKeywords("super smash brothers melee", "ssbm", "bros");
 
-    eventTypeKeywordMap.putAll("warhammer 40,000: black crusade", ImmutableList.of("40k"));
-    eventTypeKeywordMap.putAll("warhammer 40,000: dark heresy", ImmutableList.of("40k"));
-    eventTypeKeywordMap.putAll("warhammer 40,000: deathwatch", ImmutableList.of("40k"));
-    eventTypeKeywordMap.putAll("warhammer 40,000: only war", ImmutableList.of("40k"));
-    eventTypeKeywordMap.putAll("warhammer 40,000: rogue trader", ImmutableList.of("40k"));
-    eventTypeKeywordMap.putAll("warhammer 40k", ImmutableList.of("40,000"));
+    addKeywords("warhammer 40,000: black crusade", "40k");
+    addKeywords("warhammer 40,000: dark heresy", "40k");
+    addKeywords("warhammer 40,000: deathwatch", "40k");
+    addKeywords("warhammer 40,000: only war", "40k");
+    addKeywords("warhammer 40,000: rogue trader", "40k");
+    addKeywords("warhammer 40k", "40,000");
 
-    eventTypeKeywordMap.putAll("world of warcraft tcg", ImmutableList.of("wow"));
-    eventTypeKeywordMap.putAll("yggdrasil", ImmutableList.of("yggdrasill"));
-    eventTypeKeywordMap.putAll("yggdrasill", ImmutableList.of("yggdrasil"));
+    addKeywords("world of warcraft tcg", "wow");
+    addKeywords("yggdrasil", "yggdrasill");
+    addKeywords("yggdrasill", "yggdrasil");
   }
 
   private void saveBatch(List<GenconEvent> events, List<Document> documents, Index index) {
@@ -234,10 +250,10 @@ public class EventParserController extends ThymeleafController {
     return ofy().load().type(GenconEvent.class).filter("year", genconYear).keys().iterable();
   }
 
-  private BufferedReader loadGenconCsv(WebContext context, String year, boolean isFull) {
+  private BufferedReader loadGenconCsv(WebContext context, int year, boolean isFull) {
     BufferedReader reader = null;
     switch (year) {
-      case "2013": {
+      case 2013: {
         String resourcePath = "/WEB-INF/schedules/short_events.csv";
         if (isFull) {
           resourcePath = "/WEB-INF/schedules/20130818003001.csv";
@@ -294,7 +310,7 @@ public class EventParserController extends ThymeleafController {
       case 5: return "friday";
       case 6: return "saturday";
       case 7: return "sunday";
-      default: return "";
+      default: throw new IllegalArgumentException("Unable to get a day of week for " + dayOfWeek);
     }
   }
 

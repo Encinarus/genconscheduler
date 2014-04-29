@@ -29,7 +29,8 @@ public class DeleteGenconYearController extends ThymeleafController {
   private static Logger logger = Logger.getLogger(DeleteGenconYearController.class.getSimpleName());
 
   @Override
-  public void doProcess(WebContext context, TemplateEngine engine, Optional<User> loggedInUser) throws Exception {
+  public void doProcess(WebContext context, TemplateEngine engine, Optional<User> loggedInUser,
+      int genconYear) throws Exception {
     int totalEventsDeleted = 0;
 
     IndexSpec indexSpec = IndexSpec.newBuilder().setName("events").build();
@@ -38,10 +39,9 @@ public class DeleteGenconYearController extends ThymeleafController {
     Multimap<String, String> parameters = RequestHelpers.parameterMultimap(
         context.getHttpServletRequest());
 
-    long year = Long.parseLong(Iterables.getFirst(parameters.get("year"), "2013"));
     boolean purgeAll = Boolean.valueOf(Iterables.getFirst(parameters.get("purgeAll"), "false"));
 
-    List<Key<GenconEvent>> eventKeys = getEventKeys(year, purgeAll);
+    List<Key<GenconEvent>> eventKeys = getEventKeys(genconYear, purgeAll);
     while (!eventKeys.isEmpty()) {
       ofy().delete().keys(eventKeys);
 
@@ -54,31 +54,31 @@ public class DeleteGenconYearController extends ThymeleafController {
       logger.info("Deleted a batch of events: " + eventKeys.size());
       totalEventsDeleted += eventKeys.size();
 
-      eventKeys = getEventKeys(year, purgeAll);
+      eventKeys = getEventKeys(genconYear, purgeAll);
     }
 
     // There's only ~20 categories, safe to load all keys
-    ofy().delete().keys(getCategoryKeys(year, purgeAll));
+    ofy().delete().keys(getCategoryKeys(genconYear, purgeAll));
     context.getHttpServletResponse().setContentType("text/plain");
     context.getHttpServletResponse().getWriter().println(totalEventsDeleted + " Events Deleted");
     context.getHttpServletResponse().getWriter().println("All Categories Deleted");
   }
 
-  public List<Key<GenconCategory>> getCategoryKeys(long year, boolean purgeAll) {
+  public List<Key<GenconCategory>> getCategoryKeys(long genconYear, boolean purgeAll) {
     Query<GenconCategory> query = ofy().load().type(GenconCategory.class);
 
     if (!purgeAll) {
-      query = query.filter("year", year);
+      query = query.filter("year", genconYear);
     }
 
     return query.keys().list();
   }
 
-  public List<Key<GenconEvent>> getEventKeys(long year, boolean purgeAll) {
+  public List<Key<GenconEvent>> getEventKeys(long genconYear, boolean purgeAll) {
     Query<GenconEvent> query = ofy().load().type(GenconEvent.class);
 
     if (!purgeAll) {
-      query = query.filter("year", year);
+      query = query.filter("year", genconYear);
     }
     return query.limit(200).keys().list();
   }

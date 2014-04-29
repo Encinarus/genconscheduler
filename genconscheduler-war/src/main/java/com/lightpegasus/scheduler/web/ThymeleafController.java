@@ -3,6 +3,7 @@ package com.lightpegasus.scheduler.web;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.common.base.Optional;
+import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
@@ -34,6 +35,23 @@ public abstract class ThymeleafController {
     UserService userService = UserServiceFactory.getUserService();
 
     String requestURI = context.getHttpServletRequest().getRequestURI();
+    List<String> urlPieces = Splitter.on("/").splitToList(requestURI);
+
+
+    int year = 2013; // Default the year
+
+    // TODO(alek): Start using SchedulerApp.buildUrl to create urls indicating the year.
+    if (!urlPieces.isEmpty()) {
+      String firstPiece = urlPieces.get(0);
+
+      if (firstPiece.matches("^\\d*$")) {
+        year = Integer.parseInt(firstPiece);
+      } else {
+        // we're clearly not setting the year.
+      }
+    }
+
+    context.setVariable("genconYear", year);
     User loggedInUser = null;
 
     if (userService.isUserLoggedIn()) {
@@ -69,15 +87,15 @@ public abstract class ThymeleafController {
       context.setVariable("isAdmin", false);
     }
 
-    doProcess(context, engine, Optional.fromNullable(loggedInUser));
+    doProcess(context, engine, Optional.fromNullable(loggedInUser), year);
   }
 
   private boolean requiresLogin() {
     return false;
   }
 
-  protected abstract void doProcess(WebContext context, TemplateEngine engine, Optional<User> loggedInUser)
-      throws Exception;
+  protected abstract void doProcess(WebContext context, TemplateEngine engine,
+      Optional<User> loggedInUser, int genconYear) throws Exception;
 
   protected static List<SearchResult> composeSearchResults(Collection<GenconEvent> foundEvents) {
     // Now cluster the events

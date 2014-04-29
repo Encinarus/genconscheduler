@@ -15,7 +15,8 @@ import org.thymeleaf.context.WebContext;
 public class UserPreferencesController extends ThymeleafController {
   @Override
   protected void doProcess(
-      WebContext context, TemplateEngine engine, Optional<User> loggedInUser) throws Exception {
+      WebContext context, TemplateEngine engine, Optional<User> loggedInUser,
+      int genconYear) throws Exception {
     if (!loggedInUser.isPresent()) {
       context.getHttpServletResponse().sendRedirect("/");
       return;
