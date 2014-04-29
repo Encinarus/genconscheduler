@@ -74,7 +74,7 @@ public class GenconEvent {
   public GenconEvent(int year, String gameId) {
     this.year = year;
     this.gameId = gameId;
-    this.eventKey = gameId + ":" + year;
+    this.eventKey = idForYear(year, gameId);
   }
 
   public String getEventKey() {
@@ -431,6 +431,10 @@ public class GenconEvent {
 
   public long getYear() {
     return year;
+  }
+
+  public static String idForYear(int year, String eventId) {
+    return eventId + ":" + year;
   }
 
   public enum Status {

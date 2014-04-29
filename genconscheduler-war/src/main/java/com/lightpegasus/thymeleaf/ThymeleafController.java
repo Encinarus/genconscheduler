@@ -60,6 +60,8 @@ public abstract class ThymeleafController {
       }
 
       context.setVariable("user", loggedInUser);
+    } else if (requiresLogin()) {
+
     } else {
       context.setVariable("authText", "Sign in");
       context.setVariable("authUrl",
@@ -68,6 +70,10 @@ public abstract class ThymeleafController {
     }
 
     doProcess(context, engine, Optional.fromNullable(loggedInUser));
+  }
+
+  private boolean requiresLogin() {
+    return false;
   }
 
   protected abstract void doProcess(WebContext context, TemplateEngine engine, Optional<User> loggedInUser)

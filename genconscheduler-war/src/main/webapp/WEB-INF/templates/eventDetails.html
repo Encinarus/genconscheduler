@@ -7,6 +7,10 @@
   <link type="text/css" rel="stylesheet" href="/static/stylesheets/main.css"/>
 
   <title>Event Details</title>
+
+  <script language="javascript">
+
+  </script>
 </head>
 
 <body>
@@ -42,9 +46,9 @@
             th:text="${event.eventTypeAbbreviation}">TDA</span></a></li>
         <li class="active"><span th:text="${event.gameId}">TDA12345</span></li>
       </ol>
-      <h1 class="page-header"><button type="button" class="btn btn-default btn-lg">
+      <h2 class="page-header"><button type="button" class="btn btn-default btn-md">
         <span class="glyphicon glyphicon-star"></span>
-      </button> <span th:text="${event.title}">True Dungeon Adventures - Lycan's afoot!</span></h1>
+      </button> <span th:text="${event.title}">True Dungeon Adventures - Lycan's afoot!</span></h2>
       <p><em th:text="${event.shortDescription}">
         Short description of the event. You should have some knowledge of the game.
       </em></p>
