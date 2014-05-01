@@ -1,6 +1,15 @@
 package com.lightpegasus.scheduler.web;
 
+import com.google.common.base.Joiner;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Multimap;
+import com.google.common.escape.Escaper;
+import com.google.common.net.UrlEscapers;
 import com.googlecode.objectify.ObjectifyService;
 import com.googlecode.objectify.impl.translate.opt.BigDecimalLongTranslatorFactory;
 import com.googlecode.objectify.impl.translate.opt.joda.JodaTimeTranslators;
@@ -25,6 +34,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
@@ -33,13 +43,102 @@ import java.util.regex.Pattern;
  * general config of the app.
  */
 public class SchedulerApp {
-  public static String buildUrl(int year, String path) {
-    // TODO(alek): How can I make this visible in the templates?
-    try {
-      return new URL("/" + year + "/" + path).getPath();
-    } catch (MalformedURLException e) {
-      throw new RuntimeException(
-          "Unable to form url from year and path: " + year + ", " + path + "}", e);
+  /**
+   * LocalPath handles creating urls for paths with parameters. All scheduler urls
+   * will be of the form / or /year/basePath/otherStuff where year indicates the
+   * gencon year being displayed, basePath determines which controller handles the request
+   * and otherStuff is specific to the particular handler.
+   *
+   * Immutable.
+   */
+  public static class LocalPath {
+    final int year;
+    final String handler;
+    final String remainder;
+    final ImmutableMultimap<String, String> params;
+
+    public LocalPath(int year, String handler, String remaining) {
+      this(year, handler, remaining, ImmutableMultimap.<String, String>of());
+    }
+
+    private LocalPath(int year, String handler, String remainder, Multimap<String, String> params) {
+      Preconditions.checkArgument(year == 2013 || year == 2014, "Unsupported year %s", year);
+      handler = Strings.nullToEmpty(handler).trim();
+      remainder = Strings.nullToEmpty(remainder).trim();
+
+
+      Preconditions.checkArgument(!handler.contains("/"),
+          "Handler can't contain a /, found %s", handler);
+      Preconditions.checkArgument(!handler.isEmpty() || remainder.isEmpty(),
+          "Handler can't be empty with a remainder, remainder: %s", remainder);
+      this.year = year;
+      this.handler = handler;
+      this.remainder = Strings.nullToEmpty(remainder);
+      this.params = ImmutableMultimap.copyOf(params);
+    }
+
+    public LocalPath withParams(Multimap<String, String> params) {
+      return new LocalPath(year, handler, remainder, params);
+    }
+
+    public String asUrl() {
+      StringBuilder builder = new StringBuilder("/" + year + "/" + handler);
+      if (!handler.isEmpty()) {
+        builder.append("/" + remainder);
+      }
+      if (!params.isEmpty()) {
+        builder.append("?");
+      }
+      Escaper paramEscaper = UrlEscapers.urlFormParameterEscaper();
+      for (Map.Entry<String, String> param : params.entries()) {
+        String paramKey = paramEscaper.escape(param.getKey());
+        String paramValue = paramEscaper.escape(param.getValue());
+        builder.append(paramKey).append("=").append(paramValue);
+      }
+      return builder.toString();
+    }
+  }
+
+  /**
+   * Utility class for the templates to reference, to generate site links.
+   */
+  public static class PathBuilder {
+    public String sitePath(int year, String path) {
+      path = Strings.nullToEmpty(path);
+
+      List<String> pathSegments = Splitter.on("/").omitEmptyStrings().splitToList(path);
+      String handler = "";
+      if (!pathSegments.isEmpty()) {
+        handler = pathSegments.get(0);
+        pathSegments = pathSegments.subList(1, pathSegments.size());
+      }
+//      String remainder = Joiner.on("/").join(pathSegments);
+
+      return new LocalPath(year, handler, path).asUrl();
+    }
+
+    public LocalPath parseUrl(final String path, final int defaultYear) {
+      List<String> splitPath = Splitter.on("/").omitEmptyStrings().splitToList(path);
+
+      if (splitPath.isEmpty()) {
+        return new LocalPath(defaultYear, "", null);
+      }
+
+      int foundYear = defaultYear;
+      try {
+        foundYear = Integer.parseInt(splitPath.get(0));
+        splitPath = splitPath.subList(1, splitPath.size());
+      } catch (NumberFormatException e) {
+        // This is okay, we use the defaultYear instead, helps for things like /about
+      }
+
+      if (splitPath.isEmpty()) {
+        // No handler, we had a path like "/"
+        return new LocalPath(foundYear, "", null);
+      }
+
+      return new LocalPath(foundYear, splitPath.get(0), Joiner.on("/").join(
+          splitPath.subList(1, splitPath.size())));
     }
   }
 
@@ -53,24 +152,7 @@ public class SchedulerApp {
     log.info("Thymeleaf initialized.");
   }
 
-  private static class RequestPathController {
-    private Pattern requestPathPattern;
-    private ThymeleafController controller;
-
-    public RequestPathController(String pattern, ThymeleafController controller) {
-      this.requestPathPattern = Pattern.compile(pattern);
-      this.controller = controller;
-    }
-
-    public boolean matches(String requestPath) {
-      return requestPathPattern.matcher(requestPath).matches();
-    }
-
-    public ThymeleafController getController() {
-      return controller;
-    }
-  }
-  private static List<RequestPathController> controllers;
+  private static Map<String, ThymeleafController> controllers;
   private static TemplateEngine templateEngine;
 
   public static TemplateEngine getTemplateEngine() {
@@ -78,15 +160,9 @@ public class SchedulerApp {
   }
 
   public static ThymeleafController resolveControllerForRequest(final HttpServletRequest request) {
-    final String path = getRequestPath(request);
+    LocalPath path = new PathBuilder().parseUrl(getRequestPath(request), 2013);
 
-    for (RequestPathController controller : controllers) {
-      if (controller.matches(path)) {
-        return controller.getController();
-      }
-    }
-
-    return null;
+    return controllers.get(path.handler);
   }
 
   private static String getRequestPath(final HttpServletRequest request) {
@@ -106,22 +182,18 @@ public class SchedulerApp {
 
   private static void initializeThymeleafEngine() {
     // Setup the controllers to dispatch requests to the appropriate controller.
-    controllers = ImmutableList.<RequestPathController>builder()
-        .add(new RequestPathController("/browse/categories", new CategoryListController()))
-
-        .add(new RequestPathController("/eventDetails(/.*)?", new EventDetailsController()))
-        .add(new RequestPathController("/categoryDetails(/.*)?", new CategoryDetailsController()))
-
-        .add(new RequestPathController("/about", new StaticTemplateController("about")))
-        .add(new RequestPathController("/search", new SearchController()))
-        .add(new RequestPathController("/userPreferences", new UserPreferencesController()))
-        // TODO(alek): Make a better default page which links to by category / by rule system etc
-        .add(new RequestPathController("/", new CategoryListController()))
-
-        // TODO(alek): Add a filter limiting to admins
-        .add(new RequestPathController("/admin/deleteEvents", new DeleteGenconYearController()))
-        .add(new RequestPathController("/admin/parseEvents", new EventParserController()))
-
+    controllers = ImmutableMap.<String, ThymeleafController>builder()
+        .put("categories", new CategoryListController())
+        .put("event", new EventDetailsController())
+        .put("category", new CategoryDetailsController())
+        .put("about", new StaticTemplateController("about"))
+        .put("search", new SearchController())
+        .put("prefs", new UserPreferencesController())
+        // TODO(alek): Consolidate the two below controllers into an admin controller, which then
+        // routes on it's own
+        .put("deleteEvents", new DeleteGenconYearController())
+        .put("parseEvents", new EventParserController())
+        .put("", new CategoryListController())
         .build();
 
     // Now setup the template engine

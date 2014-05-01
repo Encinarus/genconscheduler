@@ -2,12 +2,16 @@ package com.lightpegasus.scheduler.web;
 
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
+import com.google.common.base.Charsets;
 import com.google.common.base.Optional;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Multiset;
 import com.google.common.collect.Ordering;
+import com.google.common.escape.Escaper;
+import com.google.common.net.UrlEscapers;
 import com.lightpegasus.scheduler.gencon.entity.GenconEvent;
 import com.lightpegasus.scheduler.gencon.entity.User;
 import com.lightpegasus.scheduler.web.controllers.SearchController;
@@ -21,6 +25,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import static com.googlecode.objectify.ObjectifyService.ofy;
@@ -35,12 +40,30 @@ public abstract class ThymeleafController {
     UserService userService = UserServiceFactory.getUserService();
 
     String requestURI = context.getHttpServletRequest().getRequestURI();
-    List<String> urlPieces = Splitter.on("/").splitToList(requestURI);
+    List<String> urlPieces = Splitter.on("/").omitEmptyStrings().trimResults()
+        .splitToList(requestURI);
 
 
-    int year = 2013; // Default the year
+    if (context.getHttpServletRequest().getMethod().equalsIgnoreCase("get")) {
+      StringBuilder composedUrl = new StringBuilder(requestURI);
 
-    // TODO(alek): Start using SchedulerApp.buildUrl to create urls indicating the year.
+      Collection<Map.Entry<String, String>> parameters =
+          RequestHelpers.parameterMultimap(context.getHttpServletRequest()).entries();
+      if (!parameters.isEmpty()) {
+        composedUrl.append("?");
+      }
+
+      Escaper escaper = UrlEscapers.urlFormParameterEscaper();
+      for (Map.Entry<String, String> getParam : parameters) {
+        String paramName = escaper.escape(getParam.getKey());
+        String paramValue = escaper.escape(getParam.getValue());
+        composedUrl.append(paramName).append("=").append(paramValue);
+      }
+    }
+
+    int year = 2013; // Default year, needs to change (duh)
+
+    // TODO(alek): Start using SchedulerApp.sitePath to create urls indicating the year.
     if (!urlPieces.isEmpty()) {
       String firstPiece = urlPieces.get(0);
 
@@ -79,7 +102,7 @@ public abstract class ThymeleafController {
 
       context.setVariable("user", loggedInUser);
     } else if (requiresLogin()) {
-
+      context.getHttpServletResponse().sendRedirect(userService.createLoginURL(requestURI));
     } else {
       context.setVariable("authText", "Sign in");
       context.setVariable("authUrl",
