@@ -42,13 +42,26 @@
     <div class="main">
       <ol class="breadcrumb">
         <li><a href="/categories/TDA"
-               th:href="@{'/2013/category/' + ${event.eventTypeAbbreviation}}"><span
+               th:href="@{${urls.sitePath('category')} + ${event.eventTypeAbbreviation}}"><span
             th:text="${event.eventTypeAbbreviation}">TDA</span></a></li>
         <li class="active"><span th:text="${event.gameId}">TDA12345</span></li>
       </ol>
-      <h2 class="page-header"><button type="button" class="btn btn-default btn-md">
-        <span class="glyphicon glyphicon-star"></span>
-      </button> <span th:text="${event.title}">True Dungeon Adventures - Lycan's afoot!</span></h2>
+      <h2 class="page-header">
+        <span th:if="${user != null}">
+          <button type="button"
+                  th:if="${user.isEventStarred(event)}"
+                  class="btn btn-default btn-md active"
+                  th:id="'star-' + ${event.gameId}">
+            <span class="glyphicon glyphicon-star"></span>
+          </button>
+          <button type="button"
+                  th:if="${!user.isEventStarred(event)}"
+                  class="btn btn-default btn-md"
+                  th:id="'star-' + ${event.gameId}">
+            <span class="glyphicon glyphicon-star"></span>
+          </button>
+        </span><span th:text="${event.title}">True Dungeon Adventures - Lycan's afoot!</span>
+      </h2>
       <p><em th:text="${event.shortDescription}">
         Short description of the event. You should have some knowledge of the game.
       </em></p>
@@ -79,6 +92,30 @@
 
 <div th:replace="core :: pagefooter">I did this!</div>
 <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+
+<script th:inline="javascript">
+/*<![CDATA[*/
+  var eventId = /*[[${event.gameId}]]*/ 'TRD1350013';
+  var starUrl = /*[['/' + ${year} + '/star/']]*/ '/2013/star/';
+  var buttonId = '#star-' + eventId
+  var isLoggedIn = /*[[${user != null}]]*/ true;
+  if (isLoggedIn) {
+    $( buttonId ).click(function( event ) {
+      $.ajax({
+        url: starUrl,
+        type: 'POST',
+        dataType: 'json',
+        data: {
+          eventId: eventId,
+        },
+      }).done(function(data){
+        $(buttonId).toggleClass('active', data.starred);
+        $(buttonId).blur();
+      });
+    });
+  }
+/*]]>*/
+</script>
 <script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
 </body>
 </html>

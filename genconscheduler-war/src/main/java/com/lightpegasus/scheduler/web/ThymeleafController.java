@@ -40,41 +40,12 @@ public abstract class ThymeleafController {
     UserService userService = UserServiceFactory.getUserService();
 
     String requestURI = context.getHttpServletRequest().getRequestURI();
-    List<String> urlPieces = Splitter.on("/").omitEmptyStrings().trimResults()
-        .splitToList(requestURI);
 
+    SchedulerApp.PathBuilder pathBuilder = new SchedulerApp.PathBuilder(2013);
+    SchedulerApp.LocalPath localPath = pathBuilder.parseUrl(requestURI);
 
-    if (context.getHttpServletRequest().getMethod().equalsIgnoreCase("get")) {
-      StringBuilder composedUrl = new StringBuilder(requestURI);
-
-      Collection<Map.Entry<String, String>> parameters =
-          RequestHelpers.parameterMultimap(context.getHttpServletRequest()).entries();
-      if (!parameters.isEmpty()) {
-        composedUrl.append("?");
-      }
-
-      Escaper escaper = UrlEscapers.urlFormParameterEscaper();
-      for (Map.Entry<String, String> getParam : parameters) {
-        String paramName = escaper.escape(getParam.getKey());
-        String paramValue = escaper.escape(getParam.getValue());
-        composedUrl.append(paramName).append("=").append(paramValue);
-      }
-    }
-
-    int year = 2013; // Default year, needs to change (duh)
-
-    // TODO(alek): Start using SchedulerApp.sitePath to create urls indicating the year.
-    if (!urlPieces.isEmpty()) {
-      String firstPiece = urlPieces.get(0);
-
-      if (firstPiece.matches("^\\d*$")) {
-        year = Integer.parseInt(firstPiece);
-      } else {
-        // we're clearly not setting the year.
-      }
-    }
-
-    context.setVariable("genconYear", year);
+    context.setVariable("urls", pathBuilder);
+    context.setVariable("year", localPath.year);
     User loggedInUser = null;
 
     if (userService.isUserLoggedIn()) {
@@ -96,7 +67,7 @@ public abstract class ThymeleafController {
         context.setVariable("user", loggedInUser);
 
         context.getHttpServletResponse().sendRedirect(
-            "/userPreferences?src=" + URLEncoder.encode(requestURI, "UTF-8"));
+            "/prefs?src=" + URLEncoder.encode(requestURI, "UTF-8"));
         return;
       }
 
@@ -104,16 +75,17 @@ public abstract class ThymeleafController {
     } else if (requiresLogin()) {
       context.getHttpServletResponse().sendRedirect(userService.createLoginURL(requestURI));
     } else {
+      context.setVariable("user", null);
       context.setVariable("authText", "Sign in");
       context.setVariable("authUrl",
           userService.createLoginURL(requestURI));
       context.setVariable("isAdmin", false);
     }
 
-    doProcess(context, engine, Optional.fromNullable(loggedInUser), year);
+    doProcess(context, engine, Optional.fromNullable(loggedInUser), localPath.year);
   }
 
-  private boolean requiresLogin() {
+  protected boolean requiresLogin() {
     return false;
   }
 

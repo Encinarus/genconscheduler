@@ -10,10 +10,13 @@ import com.lightpegasus.scheduler.web.ThymeleafController;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.WebContext;
 
+import java.io.PrintWriter;
+
 import static com.googlecode.objectify.ObjectifyService.ofy;
 
 /**
- *
+ * This one doesn't actually use a template. Because the payload is so simple (tiny bit of json)
+ * it's constructed directly in the response.
  */
 public class StarController extends ThymeleafController {
   @Override
@@ -22,9 +25,9 @@ public class StarController extends ThymeleafController {
     boolean isPost = context.getHttpServletRequest().getMethod().equals("POST");
 
     // TODO(alek): restrict to post only
-//    if (!isPost) {
-//      return;
-//    }
+    if (!isPost) {
+      return;
+    }
 
     Multimap<String, String> params =
         RequestHelpers.parameterMultimap(context.getHttpServletRequest());
@@ -33,10 +36,19 @@ public class StarController extends ThymeleafController {
 
     GenconEvent event =
         ofy().load().type(GenconEvent.class).id(GenconEvent.idForYear(genconYear, eventId)).safe();
-    loggedInUser.get().toggleEventStar(event);
+    boolean isStarred = loggedInUser.get().toggleEventStar(event);
+
+    ofy().save().entities(loggedInUser.get()).now();
+
+    context.setVariable("isStarred", isStarred);
+
+    PrintWriter writer = context.getHttpServletResponse().getWriter();
+    writer.write("{ \"starred\": " + isStarred + ", \"eventId\": \"" + eventId + "\" }");
+    writer.flush();
   }
 
-  public boolean requiresLogin() {
+  @Override
+  protected boolean requiresLogin() {
     return true;
   }
 }

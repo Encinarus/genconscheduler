@@ -3,13 +3,16 @@ package com.lightpegasus.scheduler.gencon.entity;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.googlecode.objectify.Ref;
+import com.googlecode.objectify.annotation.Cache;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
+import com.googlecode.objectify.annotation.Index;
 import com.googlecode.objectify.annotation.Load;
 import com.googlecode.objectify.annotation.Stringify;
 import com.googlecode.objectify.stringifier.Stringifier;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -17,12 +20,15 @@ import java.util.Set;
  *
  */
 @Entity
+@Cache
 public class User {
   @Id private String googleUserId;
-  private String email;
+
+  // Index for groups.
+  @Index private String email;
   private String nickname;
 
-  @Load private Set<Ref<GenconEvent>> starredEvents;
+  @Load private Set<Ref<GenconEvent>> starredEvents = new HashSet<>();
   @Stringify(PreferenceStringifier.class)
   private Map<Preference, Boolean> preferences = new HashMap<>();
 
@@ -94,5 +100,10 @@ public class User {
       return true;
     }
     return false;
+  }
+
+  public boolean isEventStarred(GenconEvent event) {
+    Ref<GenconEvent> genconEventRef = Ref.create(event);
+    return starredEvents.contains(genconEventRef);
   }
 }

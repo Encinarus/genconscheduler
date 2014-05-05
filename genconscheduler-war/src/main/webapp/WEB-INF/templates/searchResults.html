@@ -40,7 +40,7 @@
       <h4 th:text="${query}">category:ANI</h4>
       <div class="list-group" th:fragment="results">
         <a href="#" th:each="result : ${results}"
-           th:href="@{'/2013/event/' + ${result.event.gameId}}"
+           th:href="@{${urls.sitePath('event')} + ${result.event.gameId}}"
            class="list-group-item">
           <h4>
             <span class="badge" th:text="${result.similarEventCount}">10 similar</span>

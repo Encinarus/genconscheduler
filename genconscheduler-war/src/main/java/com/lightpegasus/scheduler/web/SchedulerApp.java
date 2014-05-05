@@ -25,6 +25,7 @@ import com.lightpegasus.scheduler.web.controllers.DeleteGenconYearController;
 import com.lightpegasus.scheduler.web.controllers.EventDetailsController;
 import com.lightpegasus.scheduler.web.controllers.EventParserController;
 import com.lightpegasus.scheduler.web.controllers.SearchController;
+import com.lightpegasus.scheduler.web.controllers.StarController;
 import com.lightpegasus.scheduler.web.controllers.StaticTemplateController;
 import com.lightpegasus.scheduler.web.controllers.UserPreferencesController;
 import org.thymeleaf.TemplateEngine;
@@ -103,7 +104,13 @@ public class SchedulerApp {
    * Utility class for the templates to reference, to generate site links.
    */
   public static class PathBuilder {
-    public String sitePath(int year, String path) {
+    private final int year;
+
+    public PathBuilder(int year) {
+      this.year = year;
+    }
+
+    public String sitePath(String path) {
       path = Strings.nullToEmpty(path);
 
       List<String> pathSegments = Splitter.on("/").omitEmptyStrings().splitToList(path);
@@ -112,19 +119,19 @@ public class SchedulerApp {
         handler = pathSegments.get(0);
         pathSegments = pathSegments.subList(1, pathSegments.size());
       }
-//      String remainder = Joiner.on("/").join(pathSegments);
+      String remainder = Joiner.on("/").join(pathSegments);
 
-      return new LocalPath(year, handler, path).asUrl();
+      return new LocalPath(year, handler, remainder).asUrl();
     }
 
-    public LocalPath parseUrl(final String path, final int defaultYear) {
+    public LocalPath parseUrl(final String path) {
       List<String> splitPath = Splitter.on("/").omitEmptyStrings().splitToList(path);
 
       if (splitPath.isEmpty()) {
-        return new LocalPath(defaultYear, "", null);
+        return new LocalPath(year, "", null);
       }
 
-      int foundYear = defaultYear;
+      int foundYear = year;
       try {
         foundYear = Integer.parseInt(splitPath.get(0));
         splitPath = splitPath.subList(1, splitPath.size());
@@ -160,7 +167,7 @@ public class SchedulerApp {
   }
 
   public static ThymeleafController resolveControllerForRequest(final HttpServletRequest request) {
-    LocalPath path = new PathBuilder().parseUrl(getRequestPath(request), 2013);
+    LocalPath path = new PathBuilder(2013).parseUrl(getRequestPath(request));
 
     return controllers.get(path.handler);
   }
@@ -189,6 +196,7 @@ public class SchedulerApp {
         .put("about", new StaticTemplateController("about"))
         .put("search", new SearchController())
         .put("prefs", new UserPreferencesController())
+        .put("star", new StarController())
         // TODO(alek): Consolidate the two below controllers into an admin controller, which then
         // routes on it's own
         .put("deleteEvents", new DeleteGenconYearController())

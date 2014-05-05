@@ -40,7 +40,7 @@
       <div class="row" th:each="row : ${rows}">
         <div class="col-md-6 col-sm-12" style="padding-bottom: 5px" th:each="category : ${row}">
           <a class="btn btn-default text-left"
-             href="#" th:href="@{'/2013/category/' + ${category.eventTypeAbbreviation}}"
+             href="#" th:href="@{${urls.sitePath('category')} + ${category.eventTypeAbbreviation}}"
              role="button"
              style="width:100%; white-space:normal"><span th:text="${category.categoryName}">TRD - Trade Day Event!</span>
              <span class="badge" th:text="${category.eventCount}">10</span></a>
