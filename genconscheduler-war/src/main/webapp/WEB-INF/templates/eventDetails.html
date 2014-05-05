@@ -71,20 +71,50 @@
       <hr/>
       <h4>Details</h4>
       <div class="well well-sm">
-        <!-- Would this be better as divs? Maybe a tabbed interface, with just time, location
-             and # tickets available in the default view with more in the full view -->
-        <dl class="dl-horizontal">
-          <dt>Event Type:</dt><dd><span th:text="${event.eventType}">Test</span>&nbsp;</dd>
-          <dt>Game System:</dt><dd><span th:text="${event.gameSystem}"></span>&nbsp;</dd>
-          <dt>Rules Edition:</dt><dd><span th:text="${event.rulesEdition}">Test3</span>&nbsp;</dd>
-          <dt>Minimum Players:</dt><dd><span th:text="${event.minimumPlayers}"></span>&nbsp;</dd>
-          <dt>Maximum Players:</dt><dd><span th:text="${event.maximumPlayers}">Test5</span>&nbsp;</dd>
-          <dt>Age Required:</dt><dd><span th:text="${event.ageRequired}"></span>&nbsp;</dd>
-          <dt>Experience Required:</dt><dd><span th:text="${event.experienceRequired}">Test7</span>&nbsp;</dd>
-          <dt>Materials Provided:</dt><dd><span th:text="${event.materialsProvided}"></span>&nbsp;</dd>
-          <dt>Timing:</dt><dd><span th:text="${event.readableDate}"></span> <span th:text="${event.readableStartTime}"></span> - <span th:text="${event.readableEndTime}"></span></dd>
-          <dt>GM Names:</dt><dd><span th:text="${event.gmNames}"></span>&nbsp;</dd>
-        </dl>
+        <div class="row">
+          <div class="col-sm-9 col-md-3"><strong>Event Type:</strong></div>
+          <div class="col-sm-9 col-md-9"><span th:text="${event.eventType}">Test</span></div>
+        </div>
+        <div class="row">
+          <div class="col-sm-9 col-md-3"><strong>Game System:</strong></div>
+          <div class="col-sm-9 col-md-9"><span th:text="${event.gameSystem}">Test</span></div>
+        </div>
+        <div class="row">
+          <div class="col-sm-9 col-md-3"><strong>Rules Edition:</strong></div>
+          <div class="col-sm-9 col-md-9"><span th:text="${event.rulesEdition}">Test</span></div>
+        </div>
+        <div class="row">
+          <div class="col-sm-9 col-md-3"><strong>Minimum Players:</strong></div>
+          <div class="col-sm-9 col-md-9"><span th:text="${event.minimumPlayers}">Test</span></div>
+        </div>
+        <div class="row">
+          <div class="col-sm-9 col-md-3"><strong>Maximum Players:</strong></div>
+          <div class="col-sm-9 col-md-9"><span th:text="${event.maximumPlayers}">Test</span></div>
+        </div>
+        <div class="row">
+          <div class="col-sm-9 col-md-3"><strong>Age Required:</strong></div>
+          <div class="col-sm-9 col-md-9"><span th:text="${event.ageRequired}">Test</span></div>
+        </div>
+        <div class="row">
+          <div class="col-sm-9 col-md-3"><strong>Experience Required:</strong></div>
+          <div class="col-sm-9 col-md-9"><span th:text="${event.experienceRequired}">Test</span></div>
+        </div>
+        <div class="row">
+          <div class="col-sm-9 col-md-3"><strong>Materials Provided:</strong></div>
+          <div class="col-sm-9 col-md-9"><span th:text="${event.materialsProvided}">Test</span></div>
+        </div>
+        <div class="row">
+          <div class="col-sm-9 col-md-3"><strong>Timing:</strong></div>
+          <div class="col-sm-9 col-md-9"><span th:text="${event.readableDate}"></span> <span th:text="${event.readableStartTime}"></span> - <span th:text="${event.readableEndTime}"></span></div>
+        </div>
+        <div class="row">
+          <div class="col-sm-9 col-md-3"><strong>GM Names:</strong></div>
+          <div class="col-sm-9 col-md-9"><span th:text="${event.gmNames}">Test</span></div>
+        </div>
+      </div> <!-- Details Well -->
+      <hr />
+      <div>
+
       </div>
     </div>
   </div>

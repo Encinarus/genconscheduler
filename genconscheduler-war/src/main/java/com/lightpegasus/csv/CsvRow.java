@@ -32,6 +32,11 @@ public class CsvRow {
     // These quotes are problematic, so replace them
     field = field.replace('“', '"');
     field = field.replace('”', '"');
+    field = field.replace('‐', '-');
+    field = field.replace('’', '\'');
+    field = field.replace("…", "...");
+    field = field.replace("–", "-");
+
     return Strings.emptyToNull(field.trim());
   }
 
