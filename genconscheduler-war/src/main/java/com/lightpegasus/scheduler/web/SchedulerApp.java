@@ -28,6 +28,7 @@ import com.lightpegasus.scheduler.web.controllers.SearchController;
 import com.lightpegasus.scheduler.web.controllers.StarController;
 import com.lightpegasus.scheduler.web.controllers.StaticTemplateController;
 import com.lightpegasus.scheduler.web.controllers.UserPreferencesController;
+import com.lightpegasus.scheduler.web.controllers.UserStarredController;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.templateresolver.ServletContextTemplateResolver;
 
@@ -66,7 +67,6 @@ public class SchedulerApp {
       Preconditions.checkArgument(year == 2013 || year == 2014, "Unsupported year %s", year);
       handler = Strings.nullToEmpty(handler).trim();
       remainder = Strings.nullToEmpty(remainder).trim();
-
 
       Preconditions.checkArgument(!handler.contains("/"),
           "Handler can't contain a /, found %s", handler);
@@ -197,6 +197,7 @@ public class SchedulerApp {
         .put("search", new SearchController())
         .put("prefs", new UserPreferencesController())
         .put("star", new StarController())
+        .put("starred", new UserStarredController())
         // TODO(alek): Consolidate the two below controllers into an admin controller, which then
         // routes on it's own
         .put("deleteEvents", new DeleteGenconYearController())

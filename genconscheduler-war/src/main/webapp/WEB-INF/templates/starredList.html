@@ -6,7 +6,7 @@
   <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css"/>
   <link type="text/css" rel="stylesheet" href="/static/stylesheets/main.css"/>
 
-  <title th:text="${category + ' events'}">ANI events</title>
+  <title>Starred Events</title>
 </head>
 
 <body>
@@ -36,7 +36,7 @@
 <div class="container-fluid">
   <div class="row">
     <div class="main">
-      <h1 class="page-header">Category Listing <small th:text="${category}">ANI</small></h1>
+      <h1 class="page-header">Starred Events</h1>
       <div class="list-group" th:replace="searchResults :: results">
         <a href="#" th:each="result : ${results}"
            th:href="@{${urls.sitePath('event')} + ${result.event.gameId}}"

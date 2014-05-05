@@ -67,7 +67,7 @@ public abstract class ThymeleafController {
         context.setVariable("user", loggedInUser);
 
         context.getHttpServletResponse().sendRedirect(
-            "/prefs?src=" + URLEncoder.encode(requestURI, "UTF-8"));
+            pathBuilder.sitePath("prefs") + "?src=" + URLEncoder.encode(requestURI, "UTF-8"));
         return;
       }
 

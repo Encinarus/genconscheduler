@@ -32,6 +32,7 @@ public class CategoryDetailsController extends ThymeleafController {
         .list();
 
     context.setVariable("results", composeSearchResults(categoryEvents));
+    context.setVariable("category", category);
 
     engine.process("categoryDetails", context, context.getHttpServletResponse().getWriter());
   }

@@ -1,7 +1,10 @@
 package com.lightpegasus.scheduler.gencon.entity;
 
+import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
 import com.googlecode.objectify.Ref;
 import com.googlecode.objectify.annotation.Cache;
 import com.googlecode.objectify.annotation.Entity;
@@ -11,8 +14,10 @@ import com.googlecode.objectify.annotation.Load;
 import com.googlecode.objectify.annotation.Stringify;
 import com.googlecode.objectify.stringifier.Stringifier;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -31,6 +36,15 @@ public class User {
   @Load private Set<Ref<GenconEvent>> starredEvents = new HashSet<>();
   @Stringify(PreferenceStringifier.class)
   private Map<Preference, Boolean> preferences = new HashMap<>();
+
+  public List<GenconEvent> getStarredEvents() {
+    return ImmutableList.copyOf(Iterables.transform(starredEvents,
+        new Function<Ref<GenconEvent>, GenconEvent>() {
+          @Override public GenconEvent apply(Ref<GenconEvent> input) {
+            return input.get();
+          }
+        }));
+  }
 
   public enum Preference {
     RECEIVE_EMAILS(true),
