@@ -6,7 +6,7 @@
   <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css"/>
   <link type="text/css" rel="stylesheet" href="/static/stylesheets/main.css"/>
 
-  <title>Event Details</title>
+  <title th:text="${event.title}">Event Details</title>
 
   <script language="javascript">
 
@@ -49,15 +49,10 @@
       <h2 class="page-header">
         <span th:if="${user != null}">
           <button type="button"
-                  th:if="${user.isEventStarred(event)}"
-                  class="btn btn-default btn-md active"
-                  th:id="'star-' + ${event.gameId}">
-            <span class="glyphicon glyphicon-star"></span>
-          </button>
-          <button type="button"
-                  th:if="${!user.isEventStarred(event)}"
                   class="btn btn-default btn-md"
-                  th:id="'star-' + ${event.gameId}">
+                  th:classappend="${user.isEventStarred(event)} ? active"
+                  th:id="'star-' + ${event.gameId}"
+                  th:onclick="'javascript:starEvent(&quot;' + ${event.gameId} + '&quot;)'">
             <span class="glyphicon glyphicon-star"></span>
           </button>
         </span><span th:text="${event.title}">True Dungeon Adventures - Lycan's afoot!</span>
@@ -72,49 +67,117 @@
       <h4>Details</h4>
       <div class="well well-sm">
         <div class="row">
-          <div class="col-sm-9 col-md-3"><strong>Event Type:</strong></div>
-          <div class="col-sm-9 col-md-9"><span th:text="${event.eventType}">Test</span></div>
+          <div class="col-xs-12 col-md-2"><strong>Event Type:</strong></div>
+          <div class="col-xs-12 col-md-10"><span th:text="${event.eventType}">Test</span></div>
         </div>
         <div class="row">
-          <div class="col-sm-9 col-md-3"><strong>Game System:</strong></div>
-          <div class="col-sm-9 col-md-9"><span th:text="${event.gameSystem}">Test</span></div>
+          <div class="col-xs-12 col-md-2"><strong>Game System:</strong></div>
+          <div class="col-xs-12 col-md-10"><span th:text="${event.gameSystem}">Test</span></div>
         </div>
         <div class="row">
-          <div class="col-sm-9 col-md-3"><strong>Rules Edition:</strong></div>
-          <div class="col-sm-9 col-md-9"><span th:text="${event.rulesEdition}">Test</span></div>
+          <div class="col-xs-12 col-md-2"><strong>Rules Edition:</strong></div>
+          <div class="col-xs-12 col-md-10"><span th:text="${event.rulesEdition}">Test</span></div>
         </div>
         <div class="row">
-          <div class="col-sm-9 col-md-3"><strong>Minimum Players:</strong></div>
-          <div class="col-sm-9 col-md-9"><span th:text="${event.minimumPlayers}">Test</span></div>
+          <div class="col-xs-12 col-md-2"><strong>Minimum Players:</strong></div>
+          <div class="col-xs-12 col-md-10"><span th:text="${event.minimumPlayers}">Test</span></div>
         </div>
         <div class="row">
-          <div class="col-sm-9 col-md-3"><strong>Maximum Players:</strong></div>
-          <div class="col-sm-9 col-md-9"><span th:text="${event.maximumPlayers}">Test</span></div>
+          <div class="col-xs-12 col-md-2"><strong>Maximum Players:</strong></div>
+          <div class="col-xs-12 col-md-10"><span th:text="${event.maximumPlayers}">Test</span></div>
         </div>
         <div class="row">
-          <div class="col-sm-9 col-md-3"><strong>Age Required:</strong></div>
-          <div class="col-sm-9 col-md-9"><span th:text="${event.ageRequired}">Test</span></div>
+          <div class="col-xs-12 col-md-2"><strong>Age Required:</strong></div>
+          <div class="col-xs-12 col-md-10"><span th:text="${event.ageRequired}">Test</span></div>
         </div>
         <div class="row">
-          <div class="col-sm-9 col-md-3"><strong>Experience Required:</strong></div>
-          <div class="col-sm-9 col-md-9"><span th:text="${event.experienceRequired}">Test</span></div>
+          <div class="col-xs-12 col-md-2"><strong>Experience Required:</strong></div>
+          <div class="col-xs-12 col-md-10"><span th:text="${event.experienceRequired}">Test</span></div>
         </div>
         <div class="row">
-          <div class="col-sm-9 col-md-3"><strong>Materials Provided:</strong></div>
-          <div class="col-sm-9 col-md-9"><span th:text="${event.materialsProvided}">Test</span></div>
+          <div class="col-xs-12 col-md-2"><strong>Materials Provided:</strong></div>
+          <div class="col-xs-12 col-md-10"><span th:text="${event.materialsProvided}">Test</span></div>
         </div>
         <div class="row">
-          <div class="col-sm-9 col-md-3"><strong>Timing:</strong></div>
-          <div class="col-sm-9 col-md-9"><span th:text="${event.readableDate}"></span> <span th:text="${event.readableStartTime}"></span> - <span th:text="${event.readableEndTime}"></span></div>
+          <div class="col-xs-12 col-md-2"><strong>Timing:</strong></div>
+          <div class="col-xs-12 col-md-10"><span th:text="${event.readableDate}"></span> <span th:text="${event.readableStartTime}"></span> - <span th:text="${event.readableEndTime}"></span></div>
         </div>
         <div class="row">
-          <div class="col-sm-9 col-md-3"><strong>GM Names:</strong></div>
-          <div class="col-sm-9 col-md-9"><span th:text="${event.gmNames}">Test</span></div>
+          <div class="col-xs-12 col-md-2"><strong>GM Names:</strong></div>
+          <div class="col-xs-12 col-md-10"><span th:text="${event.gmNames}">Test</span></div>
         </div>
       </div> <!-- Details Well -->
       <hr />
-      <div>
-
+      <div th:if="${hasRelatedEvents}">
+        <h3>Related Events</h3>
+        <div th:if="${!thursdayRelated.isEmpty()}">
+          <h4>Thursday</h4>
+          <div class="row">
+            <div class="col-xs-12 col-sm-6 col-md-4 col-lg-3" th:each="r : ${thursdayRelated}">
+              <span th:if="${user != null}">
+                <button type="button"
+                        class="btn btn-default btn-xs"
+                        th:classappend="${user.isEventStarred(r)} ? active"
+                        th:id="'star-' + ${r.gameId}"
+                        th:onclick="'javascript:starEvent(&quot;' + ${r.gameId} + '&quot;)'">
+                  <span class="glyphicon glyphicon-star"></span>
+                </button>
+              </span><a href="/event/1234" th:href="@{${urls.sitePath('event') + r.gameId}}"><span th:text="${r.gameId}"></span></a>:
+              <span th:text="${r.readableStartTime}"></span> - <span th:text="${r.readableEndTime}"></span>
+            </div>
+          </div>
+        </div>
+        <div th:if="${!fridayRelated.isEmpty()}">
+          <h4>Friday</h4>
+          <div class="row">
+            <div class="col-xs-12 col-sm-6 col-md-4 col-lg-3" th:each="r : ${fridayRelated}">
+              <span th:if="${user != null}">
+                <button type="button"
+                        class="btn btn-default btn-xs"
+                        th:classappend="${user.isEventStarred(r)} ? active"
+                        th:id="'star-' + ${r.gameId}"
+                        th:onclick="'javascript:starEvent(&quot;' + ${r.gameId} + '&quot;)'">
+                  <span class="glyphicon glyphicon-star"></span>
+                </button>
+              </span><a href="/event/1234" th:href="@{${urls.sitePath('event') + r.gameId}}"><span th:text="${r.gameId}"></span></a>:
+              <span th:text="${r.readableStartTime}"></span> - <span th:text="${r.readableEndTime}"></span>
+            </div>
+          </div>
+        </div>
+        <div th:if="${!saturdayRelated.isEmpty()}">
+          <h4>Saturday</h4>
+          <div class="row">
+            <div class="col-xs-12 col-sm-6 col-md-4 col-lg-3" th:each="r : ${saturdayRelated}">
+              <span th:if="${user != null}">
+                <button type="button"
+                        class="btn btn-default btn-xs"
+                        th:classappend="${user.isEventStarred(r)} ? active"
+                        th:id="'star-' + ${r.gameId}"
+                        th:onclick="'javascript:starEvent(&quot;' + ${r.gameId} + '&quot;)'">
+                  <span class="glyphicon glyphicon-star"></span>
+                </button>
+              </span><a href="/event/1234" th:href="@{${urls.sitePath('event') + r.gameId}}"><span th:text="${r.gameId}"></span></a>:
+              <span th:text="${r.readableStartTime}"></span> - <span th:text="${r.readableEndTime}"></span>
+            </div>
+          </div>
+        </div>
+        <div th:if="${!sundayRelated.isEmpty()}">
+          <h4>Sunday</h4>
+          <div class="row">
+            <div class="col-xs-12 col-sm-6 col-md-4 col-lg-3" th:each="r : ${sundayRelated}">
+              <span th:if="${user != null}">
+                <button type="button"
+                        class="btn btn-default btn-xs"
+                        th:classappend="${user.isEventStarred(r)} ? active"
+                        th:id="'star-' + ${r.gameId}"
+                        th:onclick="'javascript:starEvent(&quot;' + ${r.gameId} + '&quot;)'">
+                  <span class="glyphicon glyphicon-star"></span>
+                </button>
+              </span><a href="/event/1234" th:href="@{${urls.sitePath('event') + r.gameId}}"><span th:text="${r.gameId}"></span></a>:
+              <span th:text="${r.readableStartTime}"></span> - <span th:text="${r.readableEndTime}"></span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -125,23 +188,19 @@
 
 <script th:inline="javascript">
 /*<![CDATA[*/
-  var eventId = /*[[${event.gameId}]]*/ 'TRD1350013';
-  var starUrl = /*[['/' + ${year} + '/star/']]*/ '/2013/star/';
-  var buttonId = '#star-' + eventId
-  var isLoggedIn = /*[[${user != null}]]*/ true;
-  if (isLoggedIn) {
-    $( buttonId ).click(function( event ) {
-      $.ajax({
-        url: starUrl,
-        type: 'POST',
-        dataType: 'json',
-        data: {
-          eventId: eventId,
-        },
-      }).done(function(data){
-        $(buttonId).toggleClass('active', data.starred);
-        $(buttonId).blur();
-      });
+  function starEvent(eventId) {
+    var buttonId = '#star-' + eventId;
+    var starUrl = /*[['/' + ${year} + '/star/']]*/ '/2013/star/';
+    $.ajax({
+      url: starUrl,
+      type: 'POST',
+      dataType: 'json',
+      data: {
+        eventId: eventId,
+      },
+    }).done(function(data){
+      $(buttonId).toggleClass('active', data.starred);
+      $(buttonId).blur();
     });
   }
 /*]]>*/

@@ -273,6 +273,7 @@ public class EventParserController extends ThymeleafController {
   private Document indexEvent(GenconEvent parsedEvent) {
     return Document.newBuilder()
         .setId(parsedEvent.getEventKey())
+        .addField(textField("eventId", parsedEvent.getGameId()))
         .addField(textField("category", parsedEvent.getEventTypeAbbreviation()))
         .addField(textField("shortDescription", parsedEvent.getShortDescription()))
         .addField(textField("longDescription", parsedEvent.getLongDescription()))

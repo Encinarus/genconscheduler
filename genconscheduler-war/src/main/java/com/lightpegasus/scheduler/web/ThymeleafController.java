@@ -61,14 +61,6 @@ public abstract class ThymeleafController {
         loggedInUser = new User(googleUser.getUserId(),
             googleUser.getEmail(), googleUser.getNickname());
         ofy().save().entity(loggedInUser).now();
-
-        // At this point, we should send the user to see their preferences
-        context.setVariable("goal_page", requestURI);
-        context.setVariable("user", loggedInUser);
-
-        context.getHttpServletResponse().sendRedirect(
-            pathBuilder.sitePath("prefs") + "?src=" + URLEncoder.encode(requestURI, "UTF-8"));
-        return;
       }
 
       context.setVariable("user", loggedInUser);

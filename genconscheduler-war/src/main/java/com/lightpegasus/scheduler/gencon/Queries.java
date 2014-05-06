@@ -39,14 +39,14 @@ public class Queries {
         ofy().load().type(GenconEvent.class).id(GenconEvent.idForYear(genconYear, eventId)).now());
   }
 
-  public List<GenconEvent> loadSimilarEvents(GenconEvent event) {
+  public ImmutableList<GenconEvent> loadSimilarEvents(GenconEvent event) {
     return ImmutableList.copyOf(ofy().load().type(GenconEvent.class)
         .filter("clusterHash", event.getClusterHash())
         .filter("year", event.getYear())
         .list());
   }
 
-  public List<GenconCategory> allCategories(long genconYear) {
+  public ImmutableList<GenconCategory> allCategories(long genconYear) {
     return ImmutableList.copyOf(ofy().load()
         .type(GenconCategory.class)
         .filter("year", genconYear)
