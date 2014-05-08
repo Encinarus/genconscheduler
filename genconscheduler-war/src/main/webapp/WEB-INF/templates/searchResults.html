@@ -33,10 +33,10 @@
   </div>
 </div>
 
-<div class="container-fluid">
+<div class="container">
   <div class="row">
     <div class="main">
-      <h1 class="page-header">Search Results <small><a href="/fullSearch">(Advanced Search)</a></small></h1>
+      <h1 class="page-header">Search Results<!--<small><a href="#" th:href="@{${urls.sitePath('fullSearch')}}">(Advanced Search)</a></small>--></h1>
       <h4 th:text="${query}">category:ANI</h4>
       <div class="list-group" th:fragment="results">
         <a href="#" th:each="result : ${results}"
@@ -53,26 +53,6 @@
             Face off against werewolves in True Dungeon!
           </p>
         </a>
-        <!--/*-->
-        <a href="#" class="list-group-item">
-          <h4>
-            <span class="badge" th:text="${result.similarEventCount}">10 similar</span>
-            <span th:text="${result.event.title}">True Dungeon! Lycans Afoot (Combat-Oriented)</span>
-          </h4>
-          <p th:text="${result.event.shortDescription}">
-            Face off against werewolves in True Dungeon!
-          </p>
-        </a>
-        <a href="/eventDetails" class="list-group-item">
-          <h4>
-            <span class="badge" th:text="${result.similarEventCount}">10 similar</span>
-            <span th:text="${result.event.title}">True Dungeon! Lycans Afoot (Combat-Oriented)</span>
-          </h4>
-          <p th:text="${result.event.shortDescription}">
-            Face off against werewolves in True Dungeon!
-          </p>
-        </a>
-        <!--*/-->
       </div>
     </div>
   </div>

@@ -33,24 +33,56 @@
   </div>
 </div>
 
-<div class="container-fluid">
+<div class="container">
   <div class="row">
     <div class="main">
       <h1 class="page-header">Starred Events</h1>
-      <div class="list-group" th:replace="searchResults :: results">
-        <a href="#" th:each="result : ${results}"
-           th:href="@{${urls.sitePath('event')} + ${result.event.gameId}}"
-           class="list-group-item">
-          <h4>
-            <span class="badge" th:text="${result.similarEventCount}">10 similar</span>
-            <span th:text="${result.event.title}">True Dungeon! Lycans Afoot (Combat-Oriented)</span>
-            <span class="small" th:text="${result.event.gameSystem}">Magic: The Gathering</span>
-            <span class="small" th:text="${result.event.rulesEdition}">Current - Vintage</span>
-          </h4>
-          <p th:text="${result.event.shortDescription}">
-            Face off against werewolves in True Dungeon!
-          </p>
-        </a>
+      <ul class="nav nav-tabs" id="starredTabs">
+        <li class="active"><a href="#day">By day</a></li>
+        <li><a href="#type">By type</a></li>
+        <li><a href="#calendar">Calendar (todo)</a></li>
+      </ul>
+
+      <!-- Tab panes -->
+      <div class="tab-content">
+        <div class="tab-pane active" id="day">
+          <div th:each="day : ${eventsByDay.keySet()}">
+            <h3 th:text="${day}">Wednesday</h3>
+
+            <div class="list-group" style="padding-left: 3em;" th:each="r : ${eventsByDay.get(day)}">
+              <ul class="list-unstyled">
+                <li>
+                  <strong>
+                    <span th:text="${r.readableStartTime}">8:00am</span> - <span th:text="${r.readableEndTime}">10:00pm</span>
+                  </strong>: <a href="/event/1234" th:href="@{${urls.sitePath('event') + r.gameId}}"><span th:text="${r.gameId}">TDA1234567</span></a>
+                  <span th:text="${r.title}">Lycans Afoot!</span> (<a href="#" th:href="@{https://registration.gencon.com/events/search(wed=true,thur=true,fri=true,sat=true,sun=true,game_code=${r.gameId})}">Official Listing</a>)</li>
+                <li style="padding-left: 2em"><a href="#" th:href="@{${urls.sitePath('category') + r.eventTypeAbbreviation}}" th:text="${r.eventType}">TDA - True Dungeon Adventures</a>
+                  <span th:unless="${r.gameSystem == null &amp;&amp; r.rulesEdition == null}" th:text="'/ ' + ${r.gameSystem} + ' ' + ${r.rulesEdition}"></span></li>
+                <li style="padding-left: 2em" th:text="${r.shortDescription}">Face off against werewolves in True Dungeon!</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="tab-pane" id="type">
+          <div th:each="category : ${eventsByCategory.keySet()}">
+            <h3 th:text="${category}">Category</h3>
+
+            <div class="list-group" style="padding-left: 3em;" th:each="r : ${eventsByCategory.get(category)}">
+              <ul class="list-unstyled">
+                <li><strong>
+                  <span th:text="${r.readableDay}">Thursday</span> <span th:text="${r.readableStartTime}">8:00am</span> - <span th:text="${r.readableEndTime}">10:00pm</span>
+                </strong>: <a href="/event/1234" th:href="@{${urls.sitePath('event') + r.gameId}}"><span th:text="${r.gameId}">TDA1234567</span></a>
+                  <span th:text="${r.title}">Lycans Afoot!</span> (<a href="#" th:href="@{https://registration.gencon.com/events/search(wed=true,thur=true,fri=true,sat=true,sun=true,game_code=${r.gameId})}">Official Listing</a>)</li>
+                <li><span th:unless="${r.gameSystem == null &amp;&amp; r.rulesEdition == null}" th:text="${r.gameSystem} + ' ' + ${r.rulesEdition}"></span></li>
+                <li style="padding-left: 2em" th:text="${r.shortDescription}">Face off against werewolves in True Dungeon!</li>
+              </ul>
+            </div>
+          </div>
+
+        </div>
+        <div class="tab-pane" id="calendar">
+          TODO: A calendar showing all starred events will be here, and it'll be awesome.
+        </div>
       </div>
     </div>
   </div>
@@ -59,5 +91,13 @@
 <div th:replace="core :: pagefooter">I did this!</div>
 <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
 <script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+
+<script>
+  $('#starredTabs a').click(function (e) {
+    e.preventDefault()
+    $(this).tab('show')
+  })
+</script>
+
 </body>
 </html>

@@ -7,6 +7,7 @@ import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
 import com.googlecode.objectify.annotation.Index;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeConstants;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Duration;
 import org.joda.time.format.DateTimeFormat;
@@ -201,6 +202,17 @@ public class GenconEvent {
   public void setStartTime(DateTime startTime) {
     this.startTime = startTime;
     this.dayOfWeek = startTime.getDayOfWeek();
+  }
+
+  public String getReadableDay() {
+    switch (dayOfWeek) {
+      case DateTimeConstants.WEDNESDAY: return "Wednesday";
+      case DateTimeConstants.THURSDAY: return "Thursday";
+      case DateTimeConstants.FRIDAY: return "Friday";
+      case DateTimeConstants.SATURDAY: return "Saturday";
+      case DateTimeConstants.SUNDAY: return "Sunday";
+    }
+    return "";
   }
 
   public String getReadableDate() {

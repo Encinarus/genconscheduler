@@ -1,27 +1,25 @@
 package com.lightpegasus.scheduler.web.controllers;
 
-import com.google.common.base.Function;
-import com.google.common.base.Functions;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.lightpegasus.scheduler.gencon.entity.GenconEvent;
 import com.lightpegasus.scheduler.gencon.Queries;
 import com.lightpegasus.scheduler.gencon.entity.User;
+import com.lightpegasus.scheduler.web.EventFilters;
 import com.lightpegasus.scheduler.web.ThymeleafController;
 import org.joda.time.DateTimeConstants;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.WebContext;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import static com.google.common.base.Predicates.equalTo;
 import static com.google.common.base.Predicates.not;
+import static com.lightpegasus.scheduler.web.EventFilters.DayFilter.*;
+import static com.lightpegasus.scheduler.web.EventFilters.DayFilter.SUNDAY;
 
 public class EventDetailsController extends ThymeleafController {
   @Override
@@ -46,14 +44,7 @@ public class EventDetailsController extends ThymeleafController {
 
         context.setVariable("hasRelatedEvents", !relatedEvents.isEmpty());
 
-        context.setVariable("thursdayRelated",
-            Iterables.filter(relatedEvents, isThursday()));
-        context.setVariable("fridayRelated",
-            Iterables.filter(relatedEvents, isFriday()));
-        context.setVariable("saturdayRelated",
-            Iterables.filter(relatedEvents, isSaturday()));
-        context.setVariable("sundayRelated",
-            Iterables.filter(relatedEvents, isSunday()));
+        context.setVariable("eventsByDay", EventFilters.eventsByDay(relatedEvents));
       }
     }
 
@@ -62,6 +53,10 @@ public class EventDetailsController extends ThymeleafController {
     } else {
       engine.process("eventDetails", context, context.getHttpServletResponse().getWriter());
     }
+  }
+
+  private static Predicate<GenconEvent> isWednesday() {
+    return matchesDay(DateTimeConstants.WEDNESDAY);
   }
 
   private static Predicate<GenconEvent> isThursday() {
