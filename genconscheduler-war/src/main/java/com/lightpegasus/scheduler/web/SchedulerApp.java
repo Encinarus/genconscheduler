@@ -167,7 +167,7 @@ public class SchedulerApp {
   }
 
   public static ThymeleafController resolveControllerForRequest(final HttpServletRequest request) {
-    LocalPath path = new PathBuilder(2013).parseUrl(getRequestPath(request));
+    LocalPath path = new PathBuilder(2014).parseUrl(getRequestPath(request));
 
     return controllers.get(path.handler);
   }

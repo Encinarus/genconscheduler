@@ -2,22 +2,21 @@ package com.lightpegasus.scheduler.web;
 
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
+import com.google.common.base.Objects;
 import com.google.common.base.Optional;
-import com.google.common.collect.Lists;
+import com.google.common.collect.ImmutableCollection;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Ordering;
 import com.lightpegasus.scheduler.gencon.entity.GenconEvent;
 import com.lightpegasus.scheduler.gencon.entity.User;
-import com.lightpegasus.scheduler.web.controllers.SearchController;
-import org.joda.time.DateTimeComparator;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.WebContext;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import static com.googlecode.objectify.ObjectifyService.ofy;
@@ -33,7 +32,7 @@ public abstract class ThymeleafController {
 
     String requestURI = context.getHttpServletRequest().getRequestURI();
 
-    SchedulerApp.PathBuilder pathBuilder = new SchedulerApp.PathBuilder(2013);
+    SchedulerApp.PathBuilder pathBuilder = new SchedulerApp.PathBuilder(2014);
     SchedulerApp.LocalPath localPath = pathBuilder.parseUrl(requestURI);
 
     context.setVariable("urls", pathBuilder);
@@ -95,42 +94,115 @@ public abstract class ThymeleafController {
       results.add(new SearchResult(cluster));
     }
 
-    // Maybe keep the default sorting of the clusters?
-//    Collections.sort(results, new ResultComparator());
     return results;
   }
 
-  private static class ResultComparator implements Comparator<SearchController.SearchResult> {
-    @Override
-    public int compare(SearchController.SearchResult o1, SearchController.SearchResult o2) {
-      return Ordering.natural().reverse().compare(
-          o1.getSimilarEventCount(), o2.getSimilarEventCount());
-    }
-  }
-
   public static class SearchResult {
-    private List<GenconEvent> clusteredEvents;
+    private static final Logger log = Logger.getLogger(SearchResult.class.getSimpleName());
+    private final Map<String, Integer> availableByDay;
+    private final Map<String, Integer> openEventCounts;
+    private final List<GenconEvent> clusteredEvents;
+    private final int totalTickets;
+    private final int availableTickets;
+    private final int largestGroup;
 
     public SearchResult(Collection<GenconEvent> events) {
       // Assumes all events in the cluster have the same cluster hash
-      ArrayList<GenconEvent> sortedEvents = Lists.newArrayList(events);
-      Collections.sort(sortedEvents,
-          new Comparator<GenconEvent>() {
-            @Override
-            public int compare(GenconEvent o1, GenconEvent o2) {
-              return DateTimeComparator.getInstance().compare(o1.getStartTime(), o2.getStartTime());
-            }
+      this.clusteredEvents = EventFilters.sortByStartTime(events);
+
+      Map<String, Integer> dailyAvailability = new HashMap<>();
+      Map<String, Integer> openEventsPerDay = new HashMap<>();
+      ImmutableMultimap<String, GenconEvent> eventsByDay =
+          EventFilters.eventsByDay(clusteredEvents);
+      int tickets = 0;
+      int available = 0;
+      int largestGroup = 0;
+
+      for (String day : eventsByDay.keySet()) {
+        int runningTotalAvailable = 0;
+        int openEvents = 0;
+
+        ImmutableCollection<GenconEvent> dayEvents = eventsByDay.get(day);
+        for (GenconEvent event : dayEvents) {
+          largestGroup = Math.max(largestGroup, event.getTicketsAvailable());
+          runningTotalAvailable = event.getTicketsAvailable();
+
+          available += event.getTicketsAvailable();
+          tickets += event.getMaximumPlayers();
+          if (event.getTicketsAvailable() > 0) {
+            openEvents++;
           }
-      );
-      this.clusteredEvents = sortedEvents;
+        }
+
+        dailyAvailability.put(day, runningTotalAvailable);
+        openEventsPerDay.put(day, openEvents);
+      }
+
+      this.availableTickets = available;
+      this.totalTickets = tickets;
+      this.largestGroup = largestGroup;
+      this.availableByDay = dailyAvailability;
+      this.openEventCounts = openEventsPerDay;
     }
 
     public GenconEvent getEvent() {
       return clusteredEvents.get(0);
     }
 
+    public int getLargestGroup() {
+      return largestGroup;
+    }
+
     public int getSimilarEventCount() {
       return clusteredEvents.size();
+    }
+
+    public int getAvailableTickets() {
+      return availableTickets;
+    }
+
+    public int getTotalTickets() {
+      return totalTickets;
+    }
+
+    public int getWedAvailable() {
+      return Objects.firstNonNull(availableByDay.get("Wednesday"), 0);
+    }
+
+    public int getThursAvailable() {
+      return Objects.firstNonNull(availableByDay.get("Thursday"), 0);
+    }
+
+    public int getFriAvailable() {
+      return Objects.firstNonNull(availableByDay.get("Friday"), 0);
+    }
+
+    public int getSatAvailable() {
+      return Objects.firstNonNull(availableByDay.get("Saturday"), 0);
+    }
+
+    public int getSunAvailable() {
+      return Objects.firstNonNull(availableByDay.get("Sunday"), 0);
+    }
+
+    public int getWedOpenEvents() {
+      return Objects.firstNonNull(openEventCounts.get("Wednesday"), 0);
+    }
+
+    public int getThursOpenEvents() {
+      return Objects.firstNonNull(openEventCounts.get("Thursday"), 0);
+    }
+
+    public int getFriOpenEvents() {
+      return Objects.firstNonNull(openEventCounts.get("Friday"), 0);
+    }
+
+    public int getSatOpenEvents() {
+      return Objects.firstNonNull(openEventCounts.get("Saturday"), 0);
+    }
+
+    public int getSunOpenEvents() {
+      return Objects.firstNonNull(openEventCounts.get("Sunday"), 0);
     }
   }
 }

@@ -192,9 +192,9 @@ public class EventParserController extends ThymeleafController {
     addKeywords("middle-earth role playing", "lotr", "middle earth");
     addKeywords("meccg", "middle", "earth", "ccg", "collectable card game");
 
-    addKeywords("pathfinder", "paizo", "dungeons and dragons", "d&d");
-    addKeywords("pathfinder roleplaying  game", "paizo", "dungeons and dragons", "d&d");
-    addKeywords("pathfinder roleplaying game", "paizo", "dungeons and dragons", "d&d");
+    addKeywords("pathfinder", "paizo");
+    addKeywords("pathfinder roleplaying  game", "paizo");
+    addKeywords("pathfinder roleplaying game", "paizo");
     addKeywords("spacehulk", "space hulk");
     addKeywords("space hulk", "spacehulk");
     addKeywords("star trek: deep space nine", "ds9", "9");
@@ -251,23 +251,21 @@ public class EventParserController extends ThymeleafController {
   }
 
   private BufferedReader loadGenconCsv(WebContext context, int year, boolean isFull) {
-    BufferedReader reader = null;
-    switch (year) {
-      case 2013: {
-        String resourcePath = "/WEB-INF/schedules/short_events.csv";
-        if (isFull) {
-          resourcePath = "/WEB-INF/schedules/20130818003001.csv";
-        }
-
-        log.info("Parsing " + resourcePath);
-        reader = new BufferedReader(new InputStreamReader(
-            context.getServletContext().getResourceAsStream(resourcePath)));
+    String resourcePath;
+    if (year == 2013) {
+      resourcePath = "/WEB-INF/schedules/short_events.csv";
+      if (isFull) {
+        resourcePath = "/WEB-INF/schedules/20130818003001.csv";
       }
-      break;
-      default:
-        throw new UnsupportedOperationException("Year not supported: " + year);
+    } else if (year == 2014) {
+      resourcePath = "/WEB-INF/schedules/gencon2014.csv";
+    } else {
+      throw new UnsupportedOperationException("Year not supported: " + year);
     }
-    return reader;
+
+    log.info("Parsing " + resourcePath);
+    return new BufferedReader(new InputStreamReader(
+        context.getServletContext().getResourceAsStream(resourcePath)));
   }
 
   private Document indexEvent(GenconEvent parsedEvent) {

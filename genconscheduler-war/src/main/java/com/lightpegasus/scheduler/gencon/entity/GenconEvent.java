@@ -1,6 +1,8 @@
 package com.lightpegasus.scheduler.gencon.entity;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.googlecode.objectify.annotation.Cache;
 import com.googlecode.objectify.annotation.Entity;
@@ -254,6 +256,13 @@ public class GenconEvent {
     return gmNames;
   }
 
+  public String getReadableGmNames() {
+    if (gmNames == null) {
+      return "";
+    }
+    return Joiner.on(", ").join(gmNames);
+  }
+
   public void setGmNames(List<String> gmNames) {
     this.gmNames = ImmutableList.copyOf(gmNames);
   }
@@ -268,6 +277,10 @@ public class GenconEvent {
 
   public String getEmail() {
     return email;
+  }
+
+  public String getSpamEmail() {
+    return email.replace("@", "__at__");
   }
 
   public void setEmail(String email) {
@@ -318,6 +331,10 @@ public class GenconEvent {
     return cost;
   }
 
+  public int getDollarCost() {
+    return cost.intValue();
+  }
+
   public void setCost(BigDecimal cost) {
     this.cost = cost;
   }
@@ -356,6 +373,10 @@ public class GenconEvent {
 
   public Integer getTicketsAvailable() {
     return ticketsAvailable;
+  }
+
+  public boolean hasTickets() {
+    return ticketsAvailable > 0;
   }
 
   public void setTicketsAvailable(Integer ticketsAvailable) {

@@ -29,7 +29,7 @@
             <span th:text="${user.nickname}"></span>'s Account<b class="caret"></b></a>
           <ul class="dropdown-menu">
             <li><a href="/starred" th:href="@{${urls.sitePath('starred')}}">Starred Events</a></li>
-            <li><a href="/prefs" th:href="@{${urls.sitePath('prefs')}}">Preferences</a></li>
+            <!--<li><a href="/prefs" th:href="@{${urls.sitePath('prefs')}}">Preferences</a></li>-->
             <!-- TODO: party -->
             <li class="divider"></li>
             <li><a href="/logout" th:href="@{${authUrl}}">Sign out</a></li>
@@ -46,6 +46,17 @@
 
 <div class="container" th:fragment="pagefooter">
   <a href="/about">About</a>
+
+  <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-16179668-4', 'lightpegasus.com');
+  ga('send', 'pageview');
+
+  </script>
 </div>
 
 <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>

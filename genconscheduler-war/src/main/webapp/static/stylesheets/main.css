@@ -18,6 +18,10 @@
   margin-top: 0;
 }
 
+.ticketsAvailable {
+  font-weight: bold;
+}
+
 body {
   padding-top: 50px;
 }

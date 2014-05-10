@@ -77,6 +77,10 @@ public class CsvRow {
     return dateTimeField(columnName, "yyyy/MM/dd hh:mm a", "America/Indiana/Indianapolis");
   }
 
+  public DateTime docsDateTime(String columnName) {
+    return dateTimeField(columnName, "MM/dd/yyyy HH:mm:ss", "America/Indiana/Indianapolis");
+  }
+
   public DateTime dateTimeField(String columnName, String format, String timezone) {
     DateTimeFormatter formatter = DateTimeFormat.forPattern(format);
     return formatter.parseDateTime(stringField(columnName)).withZoneRetainFields(
