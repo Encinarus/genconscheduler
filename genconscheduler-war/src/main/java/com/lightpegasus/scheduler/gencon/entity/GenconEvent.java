@@ -96,6 +96,13 @@ public class GenconEvent {
     return gameId;
   }
 
+  public String getGenconUrl() {
+    if (year == 2014) {
+      return "http://gencon.com/events/" + gameId.substring(eventTypeAbbreviation.length() + 2);
+    }
+    return "#";
+  }
+
   public String getGroup() {
     return group;
   }
@@ -280,7 +287,7 @@ public class GenconEvent {
   }
 
   public String getSpamEmail() {
-    return email.replace("@", "__at__");
+    return Strings.nullToEmpty(email).replace("@", "__at__");
   }
 
   public void setEmail(String email) {

@@ -58,6 +58,7 @@
         </span><span th:text="${event.title}">True Dungeon Adventures - Lycan's afoot!</span> <small>(<span th:text="${event.ticketsAvailable}">10</span> ticket<span th:if="${event.ticketsAvailable != 1}">s</span>, $<span th:text="${event.dollarCost}">10</span> each)</small>
       </h2>
       <strong><span th:text="${event.readableDay}">Thursday</span> <span th:text="${event.readableStartTime}"></span> - <span th:text="${event.readableEndTime}"></span></strong>
+      (<a href="#" th:href="@{${event.genconUrl}}">Official Listing</a>)
       <p><em th:text="${event.shortDescription}">
         Short description of the event. You should have some knowledge of the game.
       </em></p>
@@ -118,11 +119,12 @@
       </div> <!-- Details Well -->
       <hr />
       <div th:if="${hasRelatedEvents}">
-        <h3>Related Events</h3>
+        <h3>Related Events <small>(<a onclick="toggleAvailable()">Toggle available</a>)</small></h3>
         <div th:each="day : ${eventsByDay.keySet()}">
           <h4 th:text="${day}">Wednesday</h4>
           <div class="row">
-            <div class="col-xs-12 col-sm-6 col-md-4" th:each="r : ${eventsByDay.get(day)}">
+            <div class="col-xs-12 col-sm-6 col-md-4" th:each="r : ${eventsByDay.get(day)}"
+                 th:classappend="${r.hasTickets()}? 'ticketsAvailable' : 'noTickets'">
               <div style="display:inline-block; vertical-align: top;" th:if="${user != null}">
                 <button type="button"
                         class="btn btn-default btn-sm"
@@ -132,7 +134,7 @@
                   <span class="glyphicon glyphicon-star"></span>
                 </button>
               </div>
-              <div style="display:inline-block;" th:classappend="${r.hasTickets()}? 'ticketsAvailable' : 'noTickets'"><a href="/event/1234" th:href="@{${urls.sitePath('event') + r.gameId}}"><span th:text="${r.gameId}"></span></a>:
+              <div style="display:inline-block;"><a href="/event/1234" th:href="@{${urls.sitePath('event') + r.gameId}}"><span th:text="${r.gameId}"></span></a>:
                 <span th:text="${r.readableStartTime}"></span> - <span th:text="${r.readableEndTime}"></span>
                 <br/>
                 <span th:text="${r.ticketsAvailable}">12</span> / <span th:text="${r.maximumPlayers}">30</span> tickets available.
@@ -150,6 +152,10 @@
 
 <script th:inline="javascript">
 /*<![CDATA[*/
+  function toggleAvailable() {
+    $(".noTickets").toggle();
+  }
+
   function starEvent(eventId) {
     var buttonId = '#star-' + eventId;
     var starUrl = /*[['/' + ${year} + '/star/']]*/ '/2014/star/';

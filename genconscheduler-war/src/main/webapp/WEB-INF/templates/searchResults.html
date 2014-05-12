@@ -38,30 +38,32 @@
     <div class="main">
       <h1 class="page-header">Search Results<!--<small><a href="#" th:href="@{${urls.sitePath('fullSearch')}}">(Advanced Search)</a></small>--></h1>
       <h4 th:text="${query}">category:ANI</h4>
-      <div class="list-group" th:fragment="results">
-        <a href="#" th:each="r : ${results}"
-           th:href="@{${urls.sitePath('event')} + ${r.event.gameId}}"
-           class="list-group-item">
-          <h4>
+      <div class="row">
+        <div class="list-group col-md-12" th:fragment="results">
+          <a href="#" th:each="r : ${results}"
+             th:href="@{${urls.sitePath('event')} + ${r.event.gameId}}"
+             class="list-group-item" style="font-size: small;">
+            <h4>
             <span class="badge" th:if="${r.similarEventCount > 1}"
                   th:text="${r.similarEventCount} + ' similar'">10 similar</span>
-            <span th:text="${r.event.title}">True Dungeon! Lycans Afoot (Combat-Oriented)</span>
-            <span class="small" th:text="${r.event.gameSystem}">Magic: The Gathering</span>
-            <span class="small" th:text="${r.event.rulesEdition}">Current - Vintage</span>
-          </h4>
-          <span th:text="${r.availableTickets}">15</span> of <span th:text="${r.totalTickets}">1000</span> tickets available, largest group is
-          <span th:text="${r.largestGroup}">8</span> tickets.
-          <ul class="list-inline">
-            <li><strong>Wed</strong> <span th:text="${r.wedAvailable}">1</span> tickets / <span th:text="${r.wedOpenEvents}">1</span> event<span th:if="${r.wedOpenEvents != 1}">s</span></li>
-            <li><strong>Thurs</strong> <span th:text="${r.thursAvailable}">1</span> tickets / <span th:text="${r.thursOpenEvents}">1</span> event<span th:if="${r.thursOpenEvents != 1}">s</span></li>
-            <li><strong>Fri</strong> <span th:text="${r.friAvailable}">1</span> tickets / <span th:text="${r.friOpenEvents}">1</span> event<span th:if="${r.friOpenEvents != 1}">s</span></li>
-            <li><strong>Sat</strong> <span th:text="${r.satAvailable}">1</span> tickets / <span th:text="${r.satOpenEvents}">1</span> event<span th:if="${r.satOpenEvents != 1}">s</span></li>
-            <li><strong>Sun</strong> <span th:text="${r.sunAvailable}">1</span> tickets / <span th:text="${r.sunOpenEvents}">1</span> event<span th:if="${r.sunOpenEvents != 1}">s</span></li>
-          </ul>
-          <p th:text="${r.event.shortDescription}">
-            Face off against werewolves in True Dungeon!
-          </p>
-        </a>
+              <span th:text="${r.event.title}">True Dungeon! Lycans Afoot (Combat-Oriented)</span>
+              <span class="small" th:text="${r.event.gameSystem}">Magic: The Gathering</span>
+              <span class="small" th:text="${r.event.rulesEdition}">Current - Vintage</span>
+            </h4>
+            <span th:text="${r.availableTickets}">15</span> of <span th:text="${r.totalTickets}">1000</span> tickets available, largest group is
+            <span th:text="${r.largestGroup}">8</span> tickets.
+            <ul class="list-inline">
+              <li><strong>Wed</strong> <span th:text="${r.wedAvailable}">1</span> tickets / <span th:text="${r.wedOpenEvents}">1</span> event<span th:if="${r.wedOpenEvents != 1}">s</span></li>
+              <li><strong>Thurs</strong> <span th:text="${r.thursAvailable}">1</span> tickets / <span th:text="${r.thursOpenEvents}">1</span> event<span th:if="${r.thursOpenEvents != 1}">s</span></li>
+              <li><strong>Fri</strong> <span th:text="${r.friAvailable}">1</span> tickets / <span th:text="${r.friOpenEvents}">1</span> event<span th:if="${r.friOpenEvents != 1}">s</span></li>
+              <li><strong>Sat</strong> <span th:text="${r.satAvailable}">1</span> tickets / <span th:text="${r.satOpenEvents}">1</span> event<span th:if="${r.satOpenEvents != 1}">s</span></li>
+              <li><strong>Sun</strong> <span th:text="${r.sunAvailable}">1</span> tickets / <span th:text="${r.sunOpenEvents}">1</span> event<span th:if="${r.sunOpenEvents != 1}">s</span></li>
+            </ul>
+            <p th:text="${r.event.shortDescription}">
+              Face off against werewolves in True Dungeon!
+            </p>
+          </a>
+        </div>
       </div>
     </div>
   </div>
