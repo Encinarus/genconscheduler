@@ -16,6 +16,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
+import com.google.common.io.ByteStreams;
 import com.googlecode.objectify.Key;
 import com.lightpegasus.scheduler.gencon.GenconScheduleParser;
 import com.lightpegasus.scheduler.gencon.entity.BackgroundTaskStatus;
@@ -25,11 +26,19 @@ import com.lightpegasus.scheduler.gencon.Queries;
 import com.lightpegasus.scheduler.gencon.entity.User;
 import com.lightpegasus.scheduler.web.RequestHelpers;
 import com.lightpegasus.scheduler.web.ThymeleafController;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.joda.time.DateTime;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.WebContext;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,6 +68,7 @@ public class EventParserController extends ThymeleafController {
         context.getHttpServletRequest());
 
     boolean isFull = Boolean.valueOf(Iterables.getFirst(parameters.get("full"), "false"));
+    boolean isLive = Boolean.valueOf(Iterables.getFirst(parameters.get("live"), "false"));
 
     BackgroundTaskStatus syncStatus = new Queries().getSyncStatus(genconYear);
 
@@ -74,7 +84,7 @@ public class EventParserController extends ThymeleafController {
     final Set<String> parsedEventKeys = new HashSet<>();
     final Map<String, GenconCategory> categories = new HashMap<>();
 
-    try (BufferedReader reader = loadGenconCsv(context, genconYear, isFull)) {
+    try (InputStream inputStream = loadGenconCsv(context, genconYear, isFull, isLive)) {
       final int eventsPerBatch = 100;
       List<GenconEvent> eventsToSave = new ArrayList<>(eventsPerBatch);
       List<Document> docsToSave = new ArrayList<>(eventsPerBatch);
@@ -85,7 +95,7 @@ public class EventParserController extends ThymeleafController {
       // Process the file, and update all events which have been updated since
       // the most recent update we've seen in a file
       DateTime mostRecentUpdate = syncStatus.getSyncTime();
-      for (GenconEvent event : new GenconScheduleParser(reader, genconYear)) {
+      for (GenconEvent event : new GenconScheduleParser(inputStream, genconYear)) {
         String eventType = event.getEventType();
         if (!categories.containsKey(eventType)) {
           categories.put(eventType, new GenconCategory(eventType, genconYear));
@@ -250,7 +260,18 @@ public class EventParserController extends ThymeleafController {
     return ofy().load().type(GenconEvent.class).filter("year", genconYear).keys().iterable();
   }
 
-  private BufferedReader loadGenconCsv(WebContext context, int year, boolean isFull) {
+  private InputStream loadGenconCsv(WebContext context, int year, boolean isFull, boolean isLive)
+      throws IOException {
+    if (isLive) {
+      HttpGet httpGet = new HttpGet("http://www.gencon.com/downloads/events_excel");
+      try(CloseableHttpClient httpClient = HttpClients.createDefault();
+          CloseableHttpResponse response = httpClient.execute(httpGet)) {
+        byte[] excelBytes = ByteStreams.toByteArray(response.getEntity().getContent());
+
+        return new ByteArrayInputStream(excelBytes);
+      }
+    }
+
     String resourcePath;
     if (year == 2013) {
       resourcePath = "/WEB-INF/schedules/short_events.csv";
@@ -264,8 +285,7 @@ public class EventParserController extends ThymeleafController {
     }
 
     log.info("Parsing " + resourcePath);
-    return new BufferedReader(new InputStreamReader(
-        context.getServletContext().getResourceAsStream(resourcePath)));
+    return context.getServletContext().getResourceAsStream(resourcePath);
   }
 
   private Document indexEvent(GenconEvent parsedEvent) {
