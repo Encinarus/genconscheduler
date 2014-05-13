@@ -37,6 +37,7 @@ import org.thymeleaf.context.WebContext;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -58,6 +59,10 @@ import static com.googlecode.objectify.ObjectifyService.ofy;
 public class EventParserController extends ThymeleafController {
   private static Logger log = Logger.getLogger(EventParserController.class.getSimpleName());
 
+  private enum ParseVersion {
+    V1, V2, V3, LIVE;
+  }
+
   @Override
   public void doProcess(WebContext context, TemplateEngine engine, Optional<User> loggedInUser,
       int genconYear) throws Exception {
@@ -67,8 +72,8 @@ public class EventParserController extends ThymeleafController {
     Multimap<String, String> parameters = RequestHelpers.parameterMultimap(
         context.getHttpServletRequest());
 
-    boolean isFull = Boolean.valueOf(Iterables.getFirst(parameters.get("full"), "false"));
-    boolean isLive = Boolean.valueOf(Iterables.getFirst(parameters.get("live"), "false"));
+    ParseVersion parseVersion = ParseVersion.valueOf(
+        Iterables.getFirst(parameters.get("version"), "V1"));
 
     BackgroundTaskStatus syncStatus = new Queries().getSyncStatus(genconYear);
 
@@ -84,7 +89,7 @@ public class EventParserController extends ThymeleafController {
     final Set<String> parsedEventKeys = new HashSet<>();
     final Map<String, GenconCategory> categories = new HashMap<>();
 
-    try (InputStream inputStream = loadGenconCsv(context, genconYear, isFull, isLive)) {
+    try (InputStream inputStream = loadGenconCsv(context, genconYear, parseVersion)) {
       final int eventsPerBatch = 100;
       List<GenconEvent> eventsToSave = new ArrayList<>(eventsPerBatch);
       List<Document> docsToSave = new ArrayList<>(eventsPerBatch);
@@ -260,32 +265,33 @@ public class EventParserController extends ThymeleafController {
     return ofy().load().type(GenconEvent.class).filter("year", genconYear).keys().iterable();
   }
 
-  private InputStream loadGenconCsv(WebContext context, int year, boolean isFull, boolean isLive)
+  private InputStream loadGenconCsv(WebContext context, int year, ParseVersion parseVersion)
       throws IOException {
-    if (isLive) {
-      HttpGet httpGet = new HttpGet("http://www.gencon.com/downloads/events_excel");
+    String basePath = "/Users/alek/projects/genconscheduler/" +
+        "genconscheduler-war/src/main/webapp/WEB-INF/schedules/";
+
+    if (year == 2013 && parseVersion == ParseVersion.V1) {
+      return new FileInputStream(basePath + "short_events.csv");
+    } else if (year == 2013 && parseVersion == ParseVersion.V2) {
+      return new FileInputStream(basePath + "20130818003001.csv");
+    } else if (year == 2014 && parseVersion == ParseVersion.V1) {
+      return new FileInputStream(basePath + "events.may.9.2014.xlsx");
+    } else if (year == 2014 && parseVersion == ParseVersion.V2) {
+      return new FileInputStream(basePath + "events.may.13.2014.xlsx");
+    } else if (year == 2014 && parseVersion == ParseVersion.LIVE) {
+      String genconUrl = "http://www.gencon.com/downloads/events_excel";
+      HttpGet httpGet = new HttpGet(genconUrl);
+
+      log.info("Requesting excel file from " + genconUrl);
       try(CloseableHttpClient httpClient = HttpClients.createDefault();
           CloseableHttpResponse response = httpClient.execute(httpGet)) {
         byte[] excelBytes = ByteStreams.toByteArray(response.getEntity().getContent());
 
         return new ByteArrayInputStream(excelBytes);
       }
-    }
-
-    String resourcePath;
-    if (year == 2013) {
-      resourcePath = "/WEB-INF/schedules/short_events.csv";
-      if (isFull) {
-        resourcePath = "/WEB-INF/schedules/20130818003001.csv";
-      }
-    } else if (year == 2014) {
-      resourcePath = "/WEB-INF/schedules/gencon2014.csv";
     } else {
       throw new UnsupportedOperationException("Year not supported: " + year);
     }
-
-    log.info("Parsing " + resourcePath);
-    return context.getServletContext().getResourceAsStream(resourcePath);
   }
 
   private Document indexEvent(GenconEvent parsedEvent) {
