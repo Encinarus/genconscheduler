@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cronentries>
+  <cron>
+    <url>/parseEvents?version=LIVE</url>
+    <description>Reparse the gencon events</description>
+    <schedule>every 6 hours synchronized</schedule>
+    <timezone>America/New_York</timezone>
+  </cron>
+</cronentries>
