@@ -18,6 +18,7 @@ import com.lightpegasus.scheduler.gencon.entity.BackgroundTaskStatus;
 import com.lightpegasus.scheduler.gencon.entity.GenconCategory;
 import com.lightpegasus.scheduler.gencon.entity.GenconEvent;
 import com.lightpegasus.scheduler.gencon.entity.SearchQuery;
+import com.lightpegasus.scheduler.gencon.entity.UpdateHistory;
 import com.lightpegasus.scheduler.gencon.entity.User;
 import com.lightpegasus.scheduler.web.controllers.CategoryDetailsController;
 import com.lightpegasus.scheduler.web.controllers.CategoryListController;
@@ -230,6 +231,7 @@ public class SchedulerApp {
     ObjectifyService.register(SearchQuery.class);
     ObjectifyService.register(BackgroundTaskStatus.class);
     ObjectifyService.register(User.class);
+    ObjectifyService.register(UpdateHistory.class);
 
     log.info("Registered entities");
   }

@@ -1,5 +1,6 @@
 package com.lightpegasus.csv;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
@@ -24,6 +25,10 @@ public class CsvRow {
   public CsvRow(Map<String, Integer> headerColumnMap, String[] parsedRow) {
     this.headerColumnMap = ImmutableMap.copyOf(headerColumnMap);
     this.parsedRow = parsedRow;
+  }
+
+  public String toString() {
+    return Joiner.on(", ").join(parsedRow);
   }
 
   // TODO(alek): Handle orNull, or maybe use optionals?

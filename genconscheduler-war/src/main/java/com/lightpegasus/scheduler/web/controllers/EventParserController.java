@@ -11,7 +11,6 @@ import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
@@ -49,6 +48,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 
 import static com.googlecode.objectify.ObjectifyService.ofy;
@@ -65,7 +66,7 @@ public class EventParserController extends ThymeleafController {
 
   @Override
   public void doProcess(WebContext context, TemplateEngine engine, Optional<User> loggedInUser,
-      int genconYear) throws Exception {
+      final int genconYear) throws Exception {
     log.info("Got request for EventParser: " +
         RequestHelpers.asDebugString(context.getHttpServletRequest()));
 
@@ -75,7 +76,7 @@ public class EventParserController extends ThymeleafController {
     ParseVersion parseVersion = ParseVersion.valueOf(
         Iterables.getFirst(parameters.get("version"), "V1"));
 
-    BackgroundTaskStatus syncStatus = new Queries().getSyncStatus(genconYear);
+    final BackgroundTaskStatus syncStatus = new Queries().getSyncStatus(genconYear);
 
     log.info("Loading old event ids");
 
@@ -83,51 +84,63 @@ public class EventParserController extends ThymeleafController {
     for (Key<GenconEvent> key : getStoredKeysForYear(genconYear)) {
       storedKeyBuilder.put(key.getName(), key);
     }
-    Map<String, Key<GenconEvent>> storedKeys  = storedKeyBuilder.build();
+    final Map<String, Key<GenconEvent>> storedKeys = storedKeyBuilder.build();
 
-    int eventsSeen = 0;
+    final AtomicInteger eventsSeen = new AtomicInteger(0);
     final Set<String> parsedEventKeys = new HashSet<>();
     final Map<String, GenconCategory> categories = new HashMap<>();
 
+    final List<String> updatedEventKeys = new ArrayList<>();
     try (InputStream inputStream = loadGenconCsv(context, genconYear, parseVersion)) {
       final int eventsPerBatch = 100;
-      List<GenconEvent> eventsToSave = new ArrayList<>(eventsPerBatch);
-      List<Document> docsToSave = new ArrayList<>(eventsPerBatch);
+      final List<GenconEvent> eventsToSave = new ArrayList<>(eventsPerBatch);
+      final List<Document> docsToSave = new ArrayList<>(eventsPerBatch);
 
       IndexSpec indexSpec = IndexSpec.newBuilder().setName("events").build();
-      Index index = SearchServiceFactory.getSearchService().getIndex(indexSpec);
+      final Index index = SearchServiceFactory.getSearchService().getIndex(indexSpec);
 
       // Process the file, and update all events which have been updated since
       // the most recent update we've seen in a file
-      DateTime mostRecentUpdate = syncStatus.getSyncTime();
-      for (GenconEvent event : new GenconScheduleParser(inputStream, genconYear)) {
-        String eventType = event.getEventType();
-        if (!categories.containsKey(eventType)) {
-          categories.put(eventType, new GenconCategory(eventType, genconYear));
-        }
+      final AtomicReference<DateTime> mostRecentUpdate = new AtomicReference<>(syncStatus.getSyncTime());
+      GenconScheduleParser genconScheduleParser = new GenconScheduleParser(inputStream, genconYear,
+          new Function<GenconEvent, Void> (){
+            @Override
+            public Void apply(GenconEvent event) {
+              String eventType = event.getEventType();
 
-        categories.get(eventType).addEvent(event);
+              if (!categories.containsKey(eventType)) {
+                categories.put(eventType, new GenconCategory(eventType, genconYear));
+              }
 
-        parsedEventKeys.add(event.getEventKey());
-        DateTime eventLastModified = event.getLastModified();
-        if (!storedKeys.containsKey(event.getEventKey())
-            || eventLastModified.isAfter(syncStatus.getSyncTime())) {
-          eventsToSave.add(event);
-          docsToSave.add(indexEvent(event));
-          eventsSeen++;
+              categories.get(eventType).addEvent(event);
 
-          if (eventLastModified.isAfter(mostRecentUpdate)) {
-            mostRecentUpdate = eventLastModified;
-          }
-        }
+              parsedEventKeys.add(event.getEventKey());
+              DateTime eventLastModified = event.getLastModified();
+              if (!storedKeys.containsKey(event.getEventKey())
+                  || eventLastModified.isAfter(syncStatus.getSyncTime())) {
+                if (storedKeys.containsKey(event.getGameId())) {
+                  updatedEventKeys.add(event.getEventKey());
+                }
 
-        if (eventsToSave.size() == eventsPerBatch) {
-          saveBatch(eventsToSave, docsToSave, index);
+                eventsToSave.add(event);
+                docsToSave.add(indexEvent(event));
+                eventsSeen.incrementAndGet();
 
-          eventsToSave = new ArrayList<>(eventsPerBatch);
-          docsToSave = new ArrayList<>(eventsPerBatch);
-        }
-      }
+                if (eventLastModified.isAfter(mostRecentUpdate.get())) {
+                  mostRecentUpdate.set(eventLastModified);
+                }
+              }
+
+              if (eventsToSave.size() == eventsPerBatch) {
+                saveBatch(eventsToSave, docsToSave, index);
+
+                eventsToSave.clear();
+                docsToSave.clear();
+              }
+              return null;
+            }});
+
+      genconScheduleParser.parse();
 
       log.info("Saving last entities.");
 
@@ -137,11 +150,11 @@ public class EventParserController extends ThymeleafController {
 
       // Now to figure out which events to delete
       // TODO: Once we have starred events, we'll need to notify people
-      markEventsDeleted(mostRecentUpdate, storedKeys, parsedEventKeys, index);
+      markEventsDeleted(mostRecentUpdate.get(), storedKeys, parsedEventKeys, index);
 
       log.info("All entities saved");
 
-      syncStatus.setSyncTime(mostRecentUpdate);
+      syncStatus.setSyncTime(mostRecentUpdate.get());
       ofy().save().entity(syncStatus);
     }
     context.getHttpServletResponse().setContentType("text/plain");
@@ -232,7 +245,11 @@ public class EventParserController extends ThymeleafController {
   }
 
   private void saveBatch(List<GenconEvent> events, List<Document> documents, Index index) {
-    log.info("Writing out a batch of " + events.size() + "/" + documents.size());
+    long memTotalMb = Runtime.getRuntime().totalMemory() / (1024 * 1024);
+    long maxTotalMb = Runtime.getRuntime().maxMemory() / (1024 * 1024);
+    long freeTotalMb = Runtime.getRuntime().freeMemory() / (1024 * 1024);
+    log.info("Writing out a batch of " + events.size() + "/" + documents.size() +
+        " " + memTotalMb + "/" + maxTotalMb + "/" + freeTotalMb);
     ofy().save().entities(events).now();
     index.put(documents);
   }

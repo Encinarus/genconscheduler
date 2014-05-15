@@ -4,15 +4,18 @@ import com.google.common.base.Function;
 import com.google.common.collect.ImmutableSet;
 import com.lightpegasus.csv.CsvParser;
 import com.lightpegasus.csv.CsvRow;
+import com.lightpegasus.csv.LowMemorySpreadsheetParser;
 import com.lightpegasus.csv.SpreadsheetParser;
 import com.lightpegasus.scheduler.gencon.entity.GenconEvent;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.poifs.filesystem.NPOIFSFileSystem;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.xml.sax.SAXException;
 
 import java.io.BufferedReader;
 import java.io.Closeable;
@@ -21,24 +24,29 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.Iterator;
+import java.util.concurrent.Callable;
 
 /**
  * Parser for the Gencon Schedules.
  */
-public class GenconScheduleParser implements Iterable<GenconEvent>, Closeable {
+public class GenconScheduleParser implements Closeable {
   private final GenconEventConverter eventConverter;
 
-  public GenconScheduleParser(InputStream input, int year)
+  public GenconScheduleParser(InputStream input, int year, final Function<GenconEvent, ?> callback)
       throws IOException, InvalidFormatException {
     switch (year) {
       case 2013:
-        this.eventConverter = new Gencon2013Converter(input);
+        this.eventConverter = new Gencon2013Converter(input, callback);
         break;
       case 2014:
-        this.eventConverter = new Gencon2014Converter(input);
+        this.eventConverter = new Gencon2014Converter(input, callback);
         break;
       default: throw new IllegalArgumentException("Unable to build a converter for " + year);
     }
+  }
+
+  public void parse() throws Exception {
+    eventConverter.parse();
   }
 
   @Override
@@ -46,34 +54,27 @@ public class GenconScheduleParser implements Iterable<GenconEvent>, Closeable {
     eventConverter.close();
   }
 
-  @Override
-  public Iterator<GenconEvent> iterator() {
-    return eventConverter;
-  }
-
-  private abstract static class GenconEventConverter implements Iterator<GenconEvent>, Closeable {
-
+  private abstract static class GenconEventConverter implements Closeable {
+    public abstract GenconEvent convertRow(CsvRow row);
+    public abstract void parse() throws Exception;
   }
 
   private static class Gencon2014Converter extends GenconEventConverter {
+    private final LowMemorySpreadsheetParser spreadsheetParser;
 
+    public Gencon2014Converter(InputStream input, final Function<GenconEvent, ?> callback)
+        throws IOException, InvalidFormatException {
+      this.spreadsheetParser = new LowMemorySpreadsheetParser(input, new Function<CsvRow, Void>() {
+        @Override
+        public Void apply(CsvRow input) {
+          callback.apply(convertRow(input));
 
-    private final SpreadsheetParser spreadsheetParser;
-
-    public Gencon2014Converter(InputStream input) throws IOException, InvalidFormatException {
-      this.spreadsheetParser = new SpreadsheetParser(input,
-          ImmutableSet.of("Last Modified", "Start Date & Time", "End Date & Time"));
+          return null;
+        }
+      });
     }
 
-    @Override
-    public boolean hasNext() {
-      return spreadsheetParser.hasNext();
-    }
-
-    @Override
-    public GenconEvent next() {
-      CsvRow row = spreadsheetParser.next();
-
+    public GenconEvent convertRow(CsvRow row) {
       GenconEvent event = new GenconEvent(2014, row.stringField("Game ID"));
       event.setGroup(row.stringField("Group"));
       event.setTitle(row.stringField("Title"));
@@ -111,8 +112,8 @@ public class GenconScheduleParser implements Iterable<GenconEvent>, Closeable {
     }
 
     @Override
-    public void remove() {
-      throw new UnsupportedOperationException("Remove not supported for gencon events");
+    public void parse() throws Exception {
+      spreadsheetParser.parseInput();
     }
 
     @Override
@@ -123,20 +124,22 @@ public class GenconScheduleParser implements Iterable<GenconEvent>, Closeable {
 
   private static class Gencon2013Converter extends GenconEventConverter {
     private final CsvParser csvParser;
+    private final Function<GenconEvent, ?> callback;
 
-    public Gencon2013Converter(InputStream input) throws IOException {
+    public Gencon2013Converter(InputStream input, Function<GenconEvent, ?> callback)
+        throws IOException {
       this.csvParser = new CsvParser(new InputStreamReader(input));
+      this.callback = callback;
+    }
+
+    public void parse() {
+      while (csvParser.hasNext()) {
+        callback.apply(convertRow(csvParser.next()));
+      }
     }
 
     @Override
-    public boolean hasNext() {
-      return csvParser.hasNext();
-    }
-
-    @Override
-    public GenconEvent next() {
-      CsvRow row = csvParser.next();
-
+    public GenconEvent convertRow(CsvRow row) {
       GenconEvent event = new GenconEvent(2013, row.stringField("Game ID"));
       event.setGroup(row.stringField("Group"));
       event.setTitle(row.stringField("Title"));
@@ -171,11 +174,6 @@ public class GenconScheduleParser implements Iterable<GenconEvent>, Closeable {
 
       event.updateHash();
       return event;
-    }
-
-    @Override
-    public void remove() {
-      throw new UnsupportedOperationException("Remove not supported for gencon parsers");
     }
 
     @Override
