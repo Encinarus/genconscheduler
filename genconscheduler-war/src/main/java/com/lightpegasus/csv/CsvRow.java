@@ -71,7 +71,13 @@ public class CsvRow {
   }
 
   public Boolean booleanField(String columnName) {
-    return Boolean.valueOf(stringField(columnName));
+    String value = stringField(columnName);
+
+    if (value.toLowerCase().startsWith("yes")) {
+      return true;
+    } else {
+      return Boolean.valueOf(value);
+    }
   }
 
   public DateTime mdyDateTimeField(String columnName) {

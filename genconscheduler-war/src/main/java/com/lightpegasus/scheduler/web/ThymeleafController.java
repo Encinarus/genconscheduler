@@ -7,6 +7,8 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
+import com.lightpegasus.scheduler.gencon.Queries;
+import com.lightpegasus.scheduler.gencon.entity.BackgroundTaskStatus;
 import com.lightpegasus.scheduler.gencon.entity.GenconEvent;
 import com.lightpegasus.scheduler.gencon.entity.User;
 import org.thymeleaf.TemplateEngine;
@@ -38,6 +40,8 @@ public abstract class ThymeleafController {
     context.setVariable("urls", pathBuilder);
     context.setVariable("year", localPath.year);
     User loggedInUser = null;
+
+    context.setVariable("syncStatus", new Queries().getSyncStatus(localPath.year));
 
     if (userService.isUserLoggedIn()) {
       context.setVariable("authText", "Sign out");

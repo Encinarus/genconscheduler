@@ -76,6 +76,9 @@ public class EventParserController extends ThymeleafController {
     ParseVersion parseVersion = ParseVersion.valueOf(
         Iterables.getFirst(parameters.get("version"), "V1"));
 
+    final Boolean forceReparse = Boolean.valueOf(
+        Iterables.getFirst(parameters.get("forceReparse"), "false"));
+
     final BackgroundTaskStatus syncStatus = new Queries().getSyncStatus(genconYear);
 
     log.info("Loading old event ids");
@@ -116,7 +119,7 @@ public class EventParserController extends ThymeleafController {
 
               parsedEventKeys.add(event.getEventKey());
               DateTime eventLastModified = event.getLastModified();
-              if (!storedKeys.containsKey(event.getEventKey())
+              if (forceReparse || !storedKeys.containsKey(event.getEventKey())
                   || eventLastModified.isAfter(syncStatus.getSyncTime())) {
                 if (storedKeys.containsKey(event.getGameId())) {
                   updatedEventKeys.add(event.getEventKey());
@@ -200,7 +203,7 @@ public class EventParserController extends ThymeleafController {
 
     // D&D
     String[] dndKeywords = {
-        "d&d", "dungeons and dragons", "rpg", "d20", "wizards of the coast", "wotc"};
+        "dnd", "d&d", "dungeons and dragons", "rpg", "d20", "wizards of the coast", "wotc"};
     addKeywords("d&d gamma world roleplaying game", dndKeywords);
     addKeywords("d&d miniatures", dndKeywords);
     addKeywords("dungeon & dragons", dndKeywords);
@@ -314,6 +317,7 @@ public class EventParserController extends ThymeleafController {
   private Document indexEvent(GenconEvent parsedEvent) {
     return Document.newBuilder()
         .setId(parsedEvent.getEventKey())
+        .addField(textField("title", parsedEvent.getTitle()))
         .addField(textField("eventId", parsedEvent.getGameId()))
         .addField(textField("category", parsedEvent.getEventTypeAbbreviation()))
         .addField(textField("shortDescription", parsedEvent.getShortDescription()))

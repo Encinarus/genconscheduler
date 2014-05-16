@@ -225,7 +225,6 @@ public class GenconEvent {
   }
 
   public String getReadableDate() {
-//    return DateTimeFormat.forPattern("EE MM/dd/yy")
     return DateTimeFormat.forPattern("EE")
         .withZone(DateTimeZone.forID("America/Indiana/Indianapolis"))
         .print(startTime);

@@ -73,12 +73,16 @@
           <div class="col-xs-12 col-md-10"><a href="#" th:href="@{'http://' + ${event.website}}"><span th:text="${event.website}">Test</span></a></div>
         </div>
         <div class="row">
+          <div class="col-xs-12 col-md-2"><strong>Organizing Group:</strong></div>
+          <div class="col-xs-12 col-md-10"><span th:text="${event.group}">Test</span></div>
+        </div>
+        <div class="row">
           <div class="col-xs-12 col-md-2"><strong>Email:</strong></div>
           <div class="col-xs-12 col-md-10"><span th:text="${event.spamEmail}">Test</span></div>
         </div>
         <div class="row">
           <div class="col-xs-12 col-md-2"><strong>Event Type:</strong></div>
-          <div class="col-xs-12 col-md-10"><span th:text="${event.eventType}">Test</span></div>
+          <div class="col-xs-12 col-md-10"><a href="#" th:href="@{${urls.sitePath('category') + event.eventTypeAbbreviation}}"><span th:text="${event.eventType}">Test</span></a></div>
         </div>
         <div class="row">
           <div class="col-xs-12 col-md-2"><strong>Game System:</strong></div>
@@ -105,12 +109,12 @@
           <div class="col-xs-12 col-md-10"><span th:text="${event.experienceRequired}">Test</span></div>
         </div>
         <div class="row">
-          <div class="col-xs-12 col-md-2"><strong>Materials Provided:</strong></div>
-          <div class="col-xs-12 col-md-10"><span th:text="${event.materialsProvided}">Test</span></div>
+          <div class="col-xs-12 col-md-2"><strong>Materials Provided?:</strong></div>
+          <div class="col-xs-12 col-md-10"><span th:text="${event.materialsProvided ? 'Yes' : 'No'}">Test</span></div>
         </div>
         <div class="row">
-          <div class="col-xs-12 col-md-2"><strong>Timing:</strong></div>
-          <div class="col-xs-12 col-md-10"><span th:text="${event.readableDate}"></span> <span th:text="${event.readableStartTime}"></span> - <span th:text="${event.readableEndTime}"></span></div>
+          <div class="col-xs-12 col-md-2"><strong>Is Tournament?:</strong></div>
+          <div class="col-xs-12 col-md-10"><span th:text="${event.isTournament ? 'Yes' : 'No'}"></span></div>
         </div>
         <div class="row">
           <div class="col-xs-12 col-md-2"><strong>GM Names:</strong></div>

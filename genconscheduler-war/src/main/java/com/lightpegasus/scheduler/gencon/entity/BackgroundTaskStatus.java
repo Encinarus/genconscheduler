@@ -5,6 +5,9 @@ import com.googlecode.objectify.annotation.Id;
 import com.googlecode.objectify.annotation.Index;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.joda.time.format.DateTimeFormat;
+
+import java.util.TimeZone;
 
 /**
  * Represents the most recent time synced from the gencon schedule.
@@ -36,6 +39,12 @@ public class BackgroundTaskStatus {
 
   public DateTime getSyncTime() {
     return syncTime;
+  }
+
+  public String getReadableSyncTime() {
+    return DateTimeFormat.forPattern("EEE MMMM dd hh:mm:ss a zzz").print(
+        syncTime.withZone(DateTimeZone.forTimeZone(
+            TimeZone.getTimeZone("America/Indiana/Indianapolis"))));
   }
 
   public long getYear() {
