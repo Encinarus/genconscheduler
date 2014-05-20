@@ -4,9 +4,40 @@
       xmlns:th="http://www.thymeleaf.org">
 <head>
   <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css"/>
+  <link type="text/css" rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/fullcalendar/1.6.4/fullcalendar.css"/>
+  <link type="text/css" rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/fullcalendar/1.6.4/fullcalendar.print.css"/>
   <link type="text/css" rel="stylesheet" href="/static/stylesheets/main.css"/>
 
   <title>Starred Events</title>
+
+  <style>
+    a.calevent div.fc-event-inner{
+      color: #FFFFFF;
+    }
+
+    a.calANI div.fc-event-inner{background-color: #A9177E;}
+    a.calBGM div.fc-event-inner{background-color: #0073AA;}
+    a.calCGM div.fc-event-inner{background-color: #6B2355;}
+    a.calEGM div.fc-event-inner{background-color: #858E95;}
+    a.calENT div.fc-event-inner{background-color: #C94088;}
+    a.calFLM div.fc-event-inner{background-color: #4B4761;}
+    a.calHMN div.fc-event-inner{background-color: #2A3181;}
+    a.calKID div.fc-event-inner{background-color: #9470AA;}
+    a.calLRP div.fc-event-inner{background-color: #AE8B1C;}
+    a.calMHE div.fc-event-inner{background-color: #E8B51C;}
+    a.calNMN div.fc-event-inner{background-color: #686F1F;}
+    a.calRPG div.fc-event-inner{background-color: #448A80;}
+    a.calRPGA div.fc-event-inner{background-color: #D67917;}
+    a.calSEM div.fc-event-inner{background-color: #009CDF;}
+    a.calSPA div.fc-event-inner{background-color: #A6C749;}
+    a.calTCG div.fc-event-inner{background-color: #1C944A;}
+    a.calTDA div.fc-event-inner{background-color: #771F17;}
+    a.calTRD div.fc-event-inner{background-color: #878F68;}
+    a.calWKS div.fc-event-inner{background-color: #5E3C03;}
+    a.calZED div.fc-event-inner{background-color: #75B9B8;}
+  </style>
+  
+
 </head>
 
 <body>
@@ -37,15 +68,16 @@
   <div class="row">
     <div class="main">
       <h1 class="page-header">Starred Events</h1>
-      <ul class="nav nav-tabs" id="starredTabs">
-        <li class="active"><a href="#day">By day</a></li>
-        <li><a href="#type">By type</a></li>
-        <li><a href="#calendar">Calendar (todo)</a></li>
+
+      <ul class="nav nav-tabs nav-justified" id="starredgroup">
+        <li class="active"><a href="#day-tab" data-toggle="tab">By day</a></li>
+        <li><a href="#type-tab" data-toggle="tab">By type</a></li>
+        <li><a href="#calendar-tab" data-toggle="tab">Calendar</a></li>
       </ul>
 
       <!-- Tab panes -->
       <div class="tab-content">
-        <div class="tab-pane active" id="day">
+        <div class="tab-pane active" id="day-tab">
           <div th:each="day : ${eventsByDay.keySet()}">
             <h3 th:text="${day}">Wednesday</h3>
 
@@ -63,7 +95,7 @@
             </div>
           </div>
         </div>
-        <div class="tab-pane" id="type">
+        <div class="tab-pane" id="type-tab">
           <div th:each="category : ${eventsByCategory.keySet()}">
             <h3 th:text="${category}">Category</h3>
 
@@ -78,10 +110,17 @@
               </ul>
             </div>
           </div>
-
         </div>
-        <div class="tab-pane" id="calendar">
-          <p>TODO: A calendar showing all starred events will be here, and it'll be awesome.</p>
+        <div class="tab-pane" id="calendar-tab">
+          <!-- This doesn't look as good as it should... -->
+          <ul class="nav nav-pills nav-justified" id="daygroup">
+            <li><a href="#wednesday">Wednesday</a></li>
+            <li class="active"><a href="#thursday">Thursday</a></li>
+            <li><a href="#friday">Friday</a></li>
+            <li><a href="#saturday">Saturday</a></li>
+            <li><a href="#sunday">Sunday</a></li>
+          </ul>
+          <div id='calendar' class="tab-content" style="padding-top: 10px;"></div>
         </div>
       </div>
     </div>
@@ -91,12 +130,95 @@
 <div th:replace="core :: pagefooter">I did this!</div>
 <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
 <script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+<script src="http://cdnjs.cloudflare.com/ajax/libs/fullcalendar/1.6.4/fullcalendar.min.js"></script>
 
-<script>
-  $('#starredTabs a').click(function (e) {
-    e.preventDefault()
-    $(this).tab('show')
-  })
+<script th:inline="javascript">
+/*<![CDATA[*/
+  $('#starredgroup a').click(function (e) {
+    e.preventDefault();
+    $(this).tab('show');
+  });
+
+  $('#starredgroup a[href="#calendar-tab"]').click(function(e) {
+    // The calendar won't render when hidden, so when we select the tab, we need to show it again
+    $('#calendar').fullCalendar('render');
+  });
+
+  $('#daygroup a').click(function (e) {
+    e.preventDefault();
+    $(this).tab('show');
+  });
+
+  // These are all horribly redundant... but my js-foo isn't there yet.
+  $('#daygroup a[href="#wednesday"]').click(function(e) {
+    e.preventDefault();
+
+    $('#calendar').fullCalendar( 'gotoDate', 2014, 7, 13 );
+  });
+
+  $('#daygroup a[href="#thursday"]').click(function(e) {
+    e.preventDefault();
+    $('#calendar').fullCalendar( 'gotoDate', 2014, 7, 14 );
+  });
+
+  $('#daygroup a[href="#friday"]').click(function(e) {
+    e.preventDefault();
+    $('#calendar').fullCalendar( 'gotoDate', 2014, 7, 15 );
+  });
+
+  $('#daygroup a[href="#saturday"]').click(function(e) {
+    e.preventDefault();
+    $('#calendar').fullCalendar( 'gotoDate', 2014, 7, 16 );
+  });
+
+  $('#daygroup a[href="#sunday"]').click(function(e) {
+    e.preventDefault();
+    $('#calendar').fullCalendar( 'gotoDate', 2014, 7, 17 );
+  });
+
+  $(document).ready(function() {
+    // And populate the calendar
+    var groupedEvents = /*[[${calendarEvents}]]*/;
+    var events = [];
+
+    for (var i = 0; i < groupedEvents.length; i++) {
+      group = groupedEvents[i];
+      events.push({
+        title: group.title,
+        start: group.startTimeSeconds,
+        end: group.endTimeSeconds,
+        url: group.genconUrl,
+        className: ['cal' + group.shortCat, 'calevent']
+      });
+    }
+
+    $('#calendar').fullCalendar({
+      header: {
+				left: '',
+				center: 'title',
+				right: 'agendaWeek,agendaDay'
+			},
+			firstDay: 3,
+      defaultView: 'agendaDay',
+      editable: false,
+      hiddenDays: [1, 2],
+      eventClick: function(event) {
+        if (event.url) {
+          // open in new tab
+          window.open(event.url);
+          return false;
+        }
+      },
+      allDayDefault: false,
+      events: events,
+    });
+
+    $('#calendar').fullCalendar( 'changeView', 'agendaDay' );
+    $('#calendar').fullCalendar( 'gotoDate', 2014, 7, 14 );
+  });
+
+
+/*]]>*/
 </script>
 
 </body>

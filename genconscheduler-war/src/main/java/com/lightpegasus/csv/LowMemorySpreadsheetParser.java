@@ -32,11 +32,13 @@ import java.util.List;
  * spreadsheet. Unfortunately, loading the entire thing into memory takes
  * more mem than we have in appengine, so the instance falls over. This tries
  * to mitigate that by processing the records as they come in.
+ *
+ * Oh, and this is specialized to gencon... I doubt it'll generalize well.
  */
 public class LowMemorySpreadsheetParser implements Closeable {
   public static void main(String[] args) throws Exception {
-    LowMemorySpreadsheetParser lowMemorySpreadsheetParser = new LowMemorySpreadsheetParser(new FileInputStream(
-        "/Users/alek/projects/genconscheduler/genconscheduler-war/src/main/"
+    LowMemorySpreadsheetParser lowMemorySpreadsheetParser = new LowMemorySpreadsheetParser(
+        new FileInputStream("/Users/alek/projects/genconscheduler/genconscheduler-war/src/main/"
             + "webapp/WEB-INF/schedules/events.may.9.2014.xlsx"
     ), new Function<CsvRow, Void>() {
       @Override
@@ -75,8 +77,6 @@ public class LowMemorySpreadsheetParser implements Closeable {
     parser.setContentHandler(handler);
 
     List<InputStream> streams = Lists.newArrayList(reader.getSheetsData());
-    System.err.println("There are " + streams.size() + " sheets");
-
     InputSource inputSource = new InputSource(streams.get(0));
 
     parser.parse(inputSource);
