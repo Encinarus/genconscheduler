@@ -119,6 +119,10 @@
           <div class="col-xs-12 col-md-2"><strong>GM Names:</strong></div>
           <div class="col-xs-12 col-md-10"><span th:text="${event.readableGmNames}">Test</span></div>
         </div>
+        <div class="row">
+          <div class="col-xs-12 col-md-2"><strong>Location:</strong></div>
+          <div class="col-xs-12 col-md-10"><span th:text="${event.location}">Test</span> - <span th:text="${event.roomName}">Test</span></div>
+        </div>
       </div> <!-- Details Well -->
       <hr />
       <div th:if="${hasRelatedEvents}">
