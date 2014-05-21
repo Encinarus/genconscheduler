@@ -14,6 +14,7 @@ import com.lightpegasus.scheduler.gencon.entity.GenconEvent;
 import com.lightpegasus.scheduler.gencon.entity.User;
 import com.lightpegasus.scheduler.web.EventFilters;
 import com.lightpegasus.scheduler.web.ThymeleafController;
+import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
 import org.joda.time.Interval;
 import org.thymeleaf.TemplateEngine;
@@ -77,15 +78,25 @@ public class UserStarredController extends ThymeleafController {
       this.eventIds = eventIds.build();
 
       Escaper escaper = UrlEscapers.urlFormParameterEscaper();
-      this.genconUrl = "https://gencon.com/events/search?utf8=✓"
+
+      final String dayParam;
+      if (firstEvent.getDayOfWeek() == DateTimeConstants.WEDNESDAY) {
+        dayParam = "wed=true";
+      } else if (firstEvent.getDayOfWeek() == DateTimeConstants.THURSDAY) {
+        dayParam = "thur=true";
+      } else if (firstEvent.getDayOfWeek() == DateTimeConstants.FRIDAY) {
+        dayParam = "fri=true";
+      } else if (firstEvent.getDayOfWeek() == DateTimeConstants.SATURDAY) {
+        dayParam = "sat=true";
+      } else {
+        dayParam = "sun=true";
+      }
+
+        this.genconUrl = "https://gencon.com/events/search?utf8=✓"
           // The gencon search doesn't like the !, so we remove it...
           + "&event_type=" + escaper.escape(firstEvent.getEventType().replace("!", ""))
           + "&title=" + escaper.escape(firstEvent.getTitle())
-          + "&wed=" + (Boolean.toString(firstEvent.getDayOfWeek() == DateTimeConstants.WEDNESDAY))
-          + "&thur=" + (Boolean.toString(firstEvent.getDayOfWeek() == DateTimeConstants.THURSDAY))
-          + "&fri=" + (Boolean.toString(firstEvent.getDayOfWeek() == DateTimeConstants.FRIDAY))
-          + "&sat=" + (Boolean.toString(firstEvent.getDayOfWeek() == DateTimeConstants.SATURDAY))
-          + "&sun=" + (Boolean.toString(firstEvent.getDayOfWeek() == DateTimeConstants.SUNDAY));
+          + "&" + dayParam;
     }
 
     public String getTitle() {
