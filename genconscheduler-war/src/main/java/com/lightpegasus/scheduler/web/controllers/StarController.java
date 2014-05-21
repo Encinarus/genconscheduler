@@ -64,7 +64,7 @@ public class StarController extends ThymeleafController {
 
     Collection<String> jsonLines = new ArrayList<>();
     for (GenconEvent event : loadAllForIds(genconYear, eventIds)) {
-      jsonLines.add("\"" + event.getGameId() + "\": \"" + user.starEvent(starOn, event) + "\"");
+      jsonLines.add("\"" + event.getGameId() + "\": " + user.starEvent(starOn, event));
     }
 
     PrintWriter writer = context.getHttpServletResponse().getWriter();

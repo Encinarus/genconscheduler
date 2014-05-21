@@ -52,7 +52,7 @@
                   class="btn btn-default btn-md"
                   id="star-all"
                   th:classappend="${areAllStarred} ? active">
-            <span class="glyphicon glyphicon-star"></span>
+            <span class="glyphicon" th:classappend="${areAllStarred} ? glyphicon-star : glyphicon-star-empty"></span>
           </button>
         </span><span th:text="${event.title}">True Dungeon Adventures - Lycan's afoot!</span> <small>(<span th:text="${event.ticketsAvailable}">10</span> ticket<span th:if="${event.ticketsAvailable != 1}">s</span>, $<span th:text="${event.dollarCost}">10</span> each)</small>
       </h2>
@@ -138,7 +138,7 @@
                         th:classappend="${user.isEventStarred(r)} ? active"
                         th:id="'star-' + ${r.gameId}"
                         th:onclick="'javascript:starEvent(&quot;' + ${r.gameId} + '&quot;)'">
-                  <span class="glyphicon glyphicon-star"></span>
+                  <span class="glyphicon" th:classappend="${user.isEventStarred(r)} ? glyphicon-star : glyphicon-star-empty"></span>
                 </button>
               </div>
               <div style="display:inline-block;"><a href="/event/1234" th:href="@{${urls.sitePath('event') + r.gameId}}"><span th:text="${r.gameId}"></span></a>:
@@ -166,6 +166,17 @@
   var starUrl = /*[['/' + ${year} + '/star/']]*/ '/2014/star/';
   var eventsByDay = /*[[${eventIdsByDay}]]*/ [];
 
+  function fixButtonStar(buttonId, isStarred) {
+    var starId = buttonId + " span.glyphicon";
+    if (isStarred) {
+      $(buttonId).addClass('active');
+      $(starId).removeClass('glyphicon-star-empty').addClass('glyphicon-star');
+    } else {
+      $(buttonId).removeClass('active');
+      $(starId).removeClass('glyphicon-star').addClass('glyphicon-star-empty');
+    }
+  }
+
   function starAll(eventClass, buttonId) {
     eventsToStar = []
     if (eventClass == "all") {
@@ -176,7 +187,6 @@
       eventsToStar = eventsByDay[eventClass];
     }
 
-    $(buttonId).blur();
     var isStarred = $(buttonId).hasClass('active');
     $.ajax({
       url: starUrl,
@@ -187,12 +197,11 @@
         starOn: !isStarred,
       },
     }).done(function(data){
-      $(buttonId).toggleClass('active', !isStarred);
-
+      fixButtonStar(buttonId, !isStarred);
       for (var eventId in data) {
-        var eventButtonId = '#star-' + eventId;
-        $(eventButtonId).toggleClass('active', data[eventId]);
+        fixButtonStar('#star-' + eventId, data[eventId]);
       }
+    }).always(function(data){
       $(buttonId).blur();
     });
   }
@@ -211,11 +220,9 @@
         starOn: !isStarred,
       },
     }).done(function(data){
-      var isNowStarred = data[eventId];
-      $(buttonId).toggleClass('active', isNowStarred);
+      fixButtonStar(buttonId, data[eventId]);
+    }).always(function(data){
       $(buttonId).blur();
-    }).fail(function() {
-      alert("Error? what what what?");
     });
   }
 

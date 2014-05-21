@@ -1,0 +1,3 @@
+# Don't use up my quota bro!
+User-agent: *
+Crawl-delay: 300
