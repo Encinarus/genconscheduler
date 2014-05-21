@@ -70,14 +70,14 @@
       <h1 class="page-header">Starred Events</h1>
 
       <ul class="nav nav-tabs nav-justified" id="starredgroup">
-        <li class="active"><a href="#day-tab" data-toggle="tab">By day</a></li>
+        <li class="active"><a href="#calendar-tab" data-toggle="tab">Calendar</a></li>
+        <li><a href="#day-tab" data-toggle="tab">By day</a></li>
         <li><a href="#type-tab" data-toggle="tab">By type</a></li>
-        <li><a href="#calendar-tab" data-toggle="tab">Calendar</a></li>
       </ul>
 
       <!-- Tab panes -->
       <div class="tab-content">
-        <div class="tab-pane active" id="day-tab">
+        <div class="tab-pane" id="day-tab">
           <div th:each="day : ${eventsByDay.keySet()}">
             <h3 th:text="${day}">Wednesday</h3>
 
@@ -111,7 +111,7 @@
             </div>
           </div>
         </div>
-        <div class="tab-pane" id="calendar-tab">
+        <div class="tab-pane active" id="calendar-tab">
           <!-- This doesn't look as good as it should... -->
           <ul class="nav nav-pills nav-justified" id="daygroup">
             <li><a href="#wednesday">Wednesday</a></li>
@@ -213,8 +213,9 @@
       events: events,
     });
 
-    $('#calendar').fullCalendar( 'changeView', 'agendaDay' );
-    $('#calendar').fullCalendar( 'gotoDate', 2014, 7, 14 );
+    $('#calendar').fullCalendar('changeView', 'agendaWeek' );
+    $('#calendar').fullCalendar('gotoDate', 2014, 7, 14 );
+    $('#calendar').fullCalendar('render');
   });
 
 

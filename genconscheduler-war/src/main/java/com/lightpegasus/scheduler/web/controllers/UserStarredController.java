@@ -134,6 +134,7 @@ public class UserStarredController extends ThymeleafController {
     List<CalendarEvent> calendarEvents = new ArrayList<>();
     // Now, cluster each into a different time
     for (Collection<GenconEvent> eventCluster : hashClusteredEvents.asMap().values()) {
+      System.err.println("Event Cluster");
       ArrayList<GenconEvent> sortedCluster = Lists.newArrayList(eventCluster);
 
       Collections.sort(sortedCluster, new Comparator<GenconEvent>() {
@@ -149,6 +150,7 @@ public class UserStarredController extends ThymeleafController {
         // Since the cluster is sorted, we just need to check if the start time is in the
         // existing cluster.
         if (clusterInterval == null || clusterInterval.contains(event.getStartTime())) {
+
           // Event is in the interval! Add to the list
           timeCluster.add(event);
 
@@ -163,8 +165,8 @@ public class UserStarredController extends ThymeleafController {
         } else {
           // New interval time!
           calendarEvents.add(new CalendarEvent(timeCluster));
-          timeCluster = new ArrayList<>();
-          clusterInterval = null;
+          timeCluster = Lists.newArrayList(event);
+          clusterInterval = new Interval(event.getStartTime(), event.getEndTime());
         }
       }
 

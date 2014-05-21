@@ -1,5 +1,7 @@
 package com.lightpegasus.scheduler.web.controllers;
 
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
@@ -10,7 +12,11 @@ import com.lightpegasus.scheduler.web.ThymeleafController;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.WebContext;
 
+import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import static com.googlecode.objectify.ObjectifyService.ofy;
 
@@ -24,27 +30,54 @@ public class StarController extends ThymeleafController {
       int genconYear) throws Exception {
     boolean isPost = context.getHttpServletRequest().getMethod().equals("POST");
 
-    // TODO(alek): restrict to post only
-    if (!isPost) {
-      return;
+    User user = loggedInUser.get();
+    if (isPost) {
+      handlePost(context, genconYear, user);
+    } else {
+      handleGet(context, genconYear, user);
     }
 
-    Multimap<String, String> params =
-        RequestHelpers.parameterMultimap(context.getHttpServletRequest());
+    System.err.println("Saving the user");
+    ofy().save().entities(user).now();
+  }
 
-    String eventId = Iterables.getOnlyElement(params.get("eventId"));
+  private void handleGet(WebContext context, int genconYear, User user) throws IOException {
+    StringBuilder responseBuilder = new StringBuilder("{[");
 
-    GenconEvent event =
-        ofy().load().type(GenconEvent.class).id(GenconEvent.idForYear(genconYear, eventId)).safe();
-    boolean isStarred = loggedInUser.get().toggleEventStar(event);
+    for (GenconEvent starredEvent : user.getStarredEvents()) {
+      responseBuilder.append("\"").append(starredEvent.getGameId()).append("\", \n");
+    }
 
-    ofy().save().entities(loggedInUser.get()).now();
-
-    context.setVariable("isStarred", isStarred);
+    responseBuilder.append("}]");
 
     PrintWriter writer = context.getHttpServletResponse().getWriter();
-    writer.write("{ \"starred\": " + isStarred + ", \"eventId\": \"" + eventId + "\" }");
+    writer.write(responseBuilder.toString());
     writer.flush();
+  }
+
+  private void handlePost(WebContext context, int genconYear, User user) throws IOException {
+    Multimap<String, String> params =
+        RequestHelpers.parameterMultimap(context.getHttpServletRequest());
+    Collection<String> eventIds = params.get("eventId[]");
+
+    boolean starOn = Boolean.valueOf(Iterables.getFirst(params.get("starOn"), "true"));
+
+    Collection<String> jsonLines = new ArrayList<>();
+    for (GenconEvent event : loadAllForIds(genconYear, eventIds)) {
+      jsonLines.add("\"" + event.getGameId() + "\": \"" + user.starEvent(starOn, event) + "\"");
+    }
+
+    PrintWriter writer = context.getHttpServletResponse().getWriter();
+    writer.write("{" + Joiner.on(",\n").join(jsonLines) + "}");
+    writer.flush();
+  }
+
+  private Collection<GenconEvent> loadAllForIds(int genconYear, Collection<String> eventIds) {
+    Collection<String> actualIds = new ArrayList<>();
+    for (String eventId : eventIds) {
+      actualIds.add(GenconEvent.idForYear(genconYear, eventId));
+    }
+    return ofy().load().type(GenconEvent.class).ids(actualIds).values();
   }
 
   @Override

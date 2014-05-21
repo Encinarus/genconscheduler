@@ -103,17 +103,15 @@ public class User {
     return nickname;
   }
 
-  /**
-   * Returns true if the event is now starred.
-   */
-  public boolean toggleEventStar(GenconEvent toggledEvent) {
-    Ref<GenconEvent> genconEventRef = Ref.create(toggledEvent);
-
-    if (!starredEvents.remove(genconEventRef)) {
+  public boolean starEvent(boolean starOn, GenconEvent event) {
+    Ref<GenconEvent> genconEventRef = Ref.create(event);
+    if (starOn) {
       starredEvents.add(genconEventRef);
-      return true;
+    } else {
+      starredEvents.remove(genconEventRef);
     }
-    return false;
+
+    return starOn;
   }
 
   public boolean isEventStarred(GenconEvent event) {
