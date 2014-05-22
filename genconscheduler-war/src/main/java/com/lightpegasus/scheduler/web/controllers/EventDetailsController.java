@@ -51,7 +51,7 @@ public class EventDetailsController extends ThymeleafController {
         context.setVariable("eventsByDay", relatedEventsByDay);
         context.setVariable("eventIdsByDay", relatedEventIdsByDay.asMap());
         context.setVariable("areAllStarred",
-            loggedInUser.get().getStarredEvents().containsAll(relatedEvents));
+            loggedInUser.isPresent() && loggedInUser.get().getStarredEvents().containsAll(relatedEvents));
       }
     }
 
