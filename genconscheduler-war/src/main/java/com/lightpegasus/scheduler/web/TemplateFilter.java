@@ -51,6 +51,7 @@ public class TemplateFilter implements Filter {
 
     try {
       controller.process(context, SchedulerApp.getTemplateEngine());
+      response.setContentType("text/html;charset=UTF-8");
     } catch(IOException | ServletException e) {
       throw e;
     } catch (Exception e) {

@@ -364,4 +364,9 @@ public class EventParserController extends ThymeleafController {
     return Field.newBuilder().setName(fieldName).setText(
         Strings.nullToEmpty(fieldText).toLowerCase());
   }
+
+  @Override
+  public boolean requiresAdmin() {
+    return true;
+  }
 }

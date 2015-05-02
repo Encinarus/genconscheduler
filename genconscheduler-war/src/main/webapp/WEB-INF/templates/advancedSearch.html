@@ -5,7 +5,7 @@
 <head>
   <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css"/>
   <link type="text/css" rel="stylesheet" href="/static/stylesheets/main.css"/>
-  <title>User Preferences</title>
+  <title>About</title>
 </head>
 
 <body>
@@ -33,19 +33,55 @@
 </div>
 
 <div class="container">
-  <h1 class="page-header">User Preferences</h1>
+  <h1 class="page-header">Advanced Search</h1>
   <div class="row">
-    <div class="main">
-      <div class="col-md-12 col-sm-12">
-        <form>
-          <div class="form-group">
-            <input type="checkbox"
-                   id="wantsEmail" name="wantsEmail"
-                   th:checked="${user.wantsEmail}"/> Allow scheduler to send you email.
+    <form action="SUBMIT">
+      <div class="col-sm-3 col-md-2">
+        <div class="row">
+          <div class="col-sm-12">
+            <b>By Day</b>
           </div>
-        </form>
+          <div class="col-sm-11 col-sm-offset-1">
+            <input type="checkbox" />Wednesday
+          </div>
+          <div class="col-sm-11 col-sm-offset-1">
+            <input type="checkbox" />Thursday
+          </div>
+          <div class="col-sm-11 col-sm-offset-1">
+            <input type="checkbox" />Friday
+          </div>
+          <div class="col-sm-11 col-sm-offset-1">
+            <input type="checkbox" />Saturday
+          </div>
+          <div class="col-sm-11 col-sm-offset-1">
+            <input type="checkbox" />Sunday
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-12">
+            <b>By Type</b>
+          </div>
+          <div class="col-sm-11 col-sm-offset-1">
+            <input type="checkbox" />True Dungeon
+          </div>
+          <div class="col-sm-11 col-sm-offset-1">
+            <input type="checkbox" />Anime
+          </div>
+          <div class="col-sm-11 col-sm-offset-1">
+            <input type="checkbox" />HNM
+          </div>
+          <div class="col-sm-11 col-sm-offset-1">
+            <input type="checkbox" />Saturday
+          </div>
+          <div class="col-sm-11 col-sm-offset-1">
+            <input type="checkbox" />Sunday
+          </div>
+        </div>
       </div>
-    </div>
+      <div class="col-sm-9 col-md-10">
+        Content
+      </div>
+    </form>
   </div>
 </div>
 

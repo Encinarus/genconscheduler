@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:th="http://www.thymeleaf.org">
 <head>
-  <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css"/>
   <link type="text/css" rel="stylesheet" href="/static/stylesheets/main.css"/>
 
   <title th:text="${event.title}">Event Details</title>
@@ -38,6 +38,16 @@
 </div>
 
 <div class="container">
+  <h1 class="page-header">
+    <span th:if="${user != null}">
+      <button type="button"
+              class="btn btn-default btn-md"
+              id="star-all"
+              th:classappend="${areAllStarred} ? active">
+        <span class="glyphicon" th:classappend="${areAllStarred} ? glyphicon-star : glyphicon-star-empty"></span>
+      </button>
+    </span><span th:text="${event.title}">True Dungeon Adventures - Lycan's afoot!</span> <small>(<span th:text="${event.ticketsAvailable}">10</span> ticket<span th:if="${event.ticketsAvailable != 1}">s</span>, $<span th:text="${event.dollarCost}">10</span> each)</small>
+  </h1>
   <div class="row">
     <div class="main">
       <ol class="breadcrumb">
@@ -46,16 +56,6 @@
             th:text="${event.eventTypeAbbreviation}">TDA</span></a></li>
         <li class="active"><span th:text="${event.gameId}">TDA12345</span></li>
       </ol>
-      <h2 class="page-header">
-        <span th:if="${user != null}">
-          <button type="button"
-                  class="btn btn-default btn-md"
-                  id="star-all"
-                  th:classappend="${areAllStarred} ? active">
-            <span class="glyphicon" th:classappend="${areAllStarred} ? glyphicon-star : glyphicon-star-empty"></span>
-          </button>
-        </span><span th:text="${event.title}">True Dungeon Adventures - Lycan's afoot!</span> <small>(<span th:text="${event.ticketsAvailable}">10</span> ticket<span th:if="${event.ticketsAvailable != 1}">s</span>, $<span th:text="${event.dollarCost}">10</span> each)</small>
-      </h2>
       <strong><span th:text="${event.readableDay}">Thursday</span> <span th:text="${event.readableStartTime}"></span> - <span th:text="${event.readableEndTime}"></span></strong>
       (<a href="#" th:href="@{${event.genconUrl}}">Official Listing</a>)
       <p><em th:text="${event.shortDescription}">
@@ -155,7 +155,7 @@
 </div>
 
 <div th:replace="core :: pagefooter">I did this!</div>
-<script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+<script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
 
 <script th:inline="javascript">
 /*<![CDATA[*/
@@ -231,6 +231,6 @@
   });
 /*]]>*/
 </script>
-<script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
 </body>
 </html>

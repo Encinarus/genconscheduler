@@ -20,6 +20,7 @@ import com.lightpegasus.scheduler.gencon.entity.GenconEvent;
 import com.lightpegasus.scheduler.gencon.entity.SearchQuery;
 import com.lightpegasus.scheduler.gencon.entity.UpdateHistory;
 import com.lightpegasus.scheduler.gencon.entity.User;
+import com.lightpegasus.scheduler.web.controllers.AdvancedSearchController;
 import com.lightpegasus.scheduler.web.controllers.CategoryDetailsController;
 import com.lightpegasus.scheduler.web.controllers.CategoryListController;
 import com.lightpegasus.scheduler.web.controllers.DeleteGenconYearController;
@@ -196,6 +197,7 @@ public class SchedulerApp {
         .put("category", new CategoryDetailsController())
         .put("about", new StaticTemplateController("about"))
         .put("search", new SearchController())
+        .put("advancedSearch", new AdvancedSearchController())
         .put("prefs", new UserPreferencesController())
         .put("star", new StarController())
         .put("starred", new UserStarredController())
