@@ -97,7 +97,7 @@ public class GenconEvent {
   }
 
   public String getGenconUrl() {
-    if (year == 2014) {
+    if (year == 2014 || year == 2015) {
       return "http://gencon.com/events/" + gameId.substring(eventTypeAbbreviation.length() + 2);
     }
     return "#";
@@ -407,14 +407,14 @@ public class GenconEvent {
 
   public void updateHash() {
     this.clusterHash = Objects.toStringHelper(this)
-        .add("group", group)
-        .add("title", title)
-        .add("shortDescription", shortDescription)
-        .add("longDescription", longDescription)
-        .add("eventType", eventType)
-        .add("gameSystem", gameSystem)
-        .add("rulesEdition", rulesEdition)
-        .add("ageRequired", ageRequired)
+        .add("group", scrub(group))
+        .add("title", scrub(title))
+        .add("shortDescription", scrub(shortDescription))
+        .add("longDescription", scrub(longDescription))
+        .add("eventType", scrub(eventType))
+        .add("gameSystem", scrub(gameSystem))
+        .add("rulesEdition", scrub(rulesEdition))
+        .add("ageRequired", scrub(ageRequired))
         .add("experienceRequired", experienceRequired)
         .add("materialsProvided", materialsProvided)
         .add("duration", duration)
@@ -428,6 +428,11 @@ public class GenconEvent {
         .add("year", year)
         .toString()
         .hashCode();
+  }
+
+  private String scrub(String input) {
+    return Strings.nullToEmpty(input).toLowerCase()
+        .replaceAll("[\\.,!?@#$%^&\\*()&]?(and)?", "");
   }
 
   @Override

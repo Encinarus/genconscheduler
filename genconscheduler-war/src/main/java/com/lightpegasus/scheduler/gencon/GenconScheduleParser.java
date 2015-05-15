@@ -1,30 +1,16 @@
 package com.lightpegasus.scheduler.gencon;
 
 import com.google.common.base.Function;
-import com.google.common.collect.ImmutableSet;
 import com.lightpegasus.csv.CsvParser;
 import com.lightpegasus.csv.CsvRow;
 import com.lightpegasus.csv.LowMemorySpreadsheetParser;
-import com.lightpegasus.csv.SpreadsheetParser;
 import com.lightpegasus.scheduler.gencon.entity.GenconEvent;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
-import org.apache.poi.openxml4j.opc.OPCPackage;
-import org.apache.poi.poifs.filesystem.NPOIFSFileSystem;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.xml.sax.SAXException;
 
-import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Reader;
-import java.util.Iterator;
-import java.util.concurrent.Callable;
 
 /**
  * Parser for the Gencon Schedules.
@@ -39,7 +25,8 @@ public class GenconScheduleParser implements Closeable {
         this.eventConverter = new Gencon2013Converter(input, callback);
         break;
       case 2014:
-        this.eventConverter = new Gencon2014Converter(input, callback);
+      case 2015:
+        this.eventConverter = new GenconConverterV2(year, input, callback);
         break;
       default: throw new IllegalArgumentException("Unable to build a converter for " + year);
     }
@@ -59,11 +46,13 @@ public class GenconScheduleParser implements Closeable {
     public abstract void parse() throws Exception;
   }
 
-  private static class Gencon2014Converter extends GenconEventConverter {
+  private static class GenconConverterV2 extends GenconEventConverter {
     private final LowMemorySpreadsheetParser spreadsheetParser;
+    private final int year;
 
-    public Gencon2014Converter(InputStream input, final Function<GenconEvent, ?> callback)
+    public GenconConverterV2(int year, InputStream input, final Function<GenconEvent, ?> callback)
         throws IOException, InvalidFormatException {
+      this.year = year;
       this.spreadsheetParser = new LowMemorySpreadsheetParser(input, new Function<CsvRow, Void>() {
         @Override
         public Void apply(CsvRow input) {
@@ -75,7 +64,7 @@ public class GenconScheduleParser implements Closeable {
     }
 
     public GenconEvent convertRow(CsvRow row) {
-      GenconEvent event = new GenconEvent(2014, row.stringField("Game ID"));
+      GenconEvent event = new GenconEvent(year, row.stringField("Game ID"));
       event.setGroup(row.stringField("Group"));
       event.setTitle(row.stringField("Title"));
       event.setShortDescription(row.stringField("Short Description"));

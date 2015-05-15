@@ -11,10 +11,14 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
+import com.google.common.escape.CharEscaperBuilder;
+import com.google.common.escape.Escapers;
+import com.google.common.net.UrlEscapers;
 import com.lightpegasus.scheduler.gencon.entity.GenconEvent;
 import com.lightpegasus.scheduler.gencon.entity.SearchQuery;
 import com.lightpegasus.scheduler.gencon.entity.User;
 import com.lightpegasus.scheduler.web.RequestHelpers;
+import com.lightpegasus.scheduler.web.SchedulerApp;
 import com.lightpegasus.scheduler.web.ThymeleafController;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.WebContext;
@@ -35,8 +39,8 @@ public class SearchController extends ThymeleafController {
   private static Logger log = Logger.getLogger(SearchController.class.getSimpleName());
 
   @Override
-  public void doProcess(WebContext context, TemplateEngine engine, Optional<User> loggedInUser,
-      int genconYear) throws Exception {
+  public void doProcess(SchedulerApp.PathBuilder pathBuilder, WebContext context, TemplateEngine engine, Optional<User> loggedInUser,
+                        int genconYear) throws Exception {
     Multimap<String, String> parameters =
         RequestHelpers.parameterMultimap(context.getHttpServletRequest());
 
@@ -45,6 +49,11 @@ public class SearchController extends ThymeleafController {
     IndexSpec indexSpec = IndexSpec.newBuilder().setName("events").build();
     Index index = SearchServiceFactory.getSearchService().getIndex(indexSpec);
 
+    String sanitizedQuery = "\"" + new CharEscaperBuilder()
+        .addEscape('"', "")
+        .addEscape('\'', "")
+        .toEscaper()
+        .escape(query) + "\"";
     QueryOptions options = QueryOptions.newBuilder()
         .setLimit(1000)
         .setReturningIdsOnly(true)
@@ -52,7 +61,7 @@ public class SearchController extends ThymeleafController {
         .build();
     Results<ScoredDocument> documents = index.search(Query.newBuilder()
         .setOptions(options)
-        .build(query + " year:" + genconYear));
+        .build(sanitizedQuery + " year:" + genconYear));
 
     Collection<GenconEvent> foundEvents = ImmutableList.of();
 

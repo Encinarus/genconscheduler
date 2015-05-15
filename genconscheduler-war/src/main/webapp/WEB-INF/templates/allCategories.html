@@ -6,6 +6,7 @@
   <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css"/>
   <link type="text/css" rel="stylesheet" href="/static/stylesheets/main.css"/>
   <title>Gencon Event Categories</title>
+  <meta name="google-site-verification" content="a_VPdSYEO-t_BvYNh_sIhTYu76b12ltFT7kCOl-ujzE" />
 </head>
 
 <body>
@@ -33,10 +34,10 @@
 </div>
 
 <div class="container">
-  <h1 class="page-header">Events by type</h1>
+  <h1 class="page-header" th:unless="${rows.isEmpty}"><span th:text="${year}">2013</span> Events by type</h1>
+  <h1 class="page-header" th:if="${rows.isEmpty}">Gen Con <span th:text="${year}">2013</span> events aren't available yet.</h1>
   <div class="row">
     <div class="col-sm-12 col-md-12 main">
-
       <div class="row" th:each="row : ${rows}">
         <div class="col-md-6 col-sm-12" style="padding-bottom: 5px" th:each="category : ${row}">
           <a class="btn btn-default text-left"

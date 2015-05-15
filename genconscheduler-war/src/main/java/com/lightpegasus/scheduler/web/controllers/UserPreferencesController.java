@@ -5,6 +5,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import com.lightpegasus.scheduler.gencon.entity.User;
 import com.lightpegasus.scheduler.web.RequestHelpers;
+import com.lightpegasus.scheduler.web.SchedulerApp;
 import com.lightpegasus.scheduler.web.ThymeleafController;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.WebContext;
@@ -15,7 +16,7 @@ import org.thymeleaf.context.WebContext;
 public class UserPreferencesController extends ThymeleafController {
   @Override
   protected void doProcess(
-      WebContext context, TemplateEngine engine, Optional<User> loggedInUser,
+      SchedulerApp.PathBuilder pathBuilder, WebContext context, TemplateEngine engine, Optional<User> loggedInUser,
       int genconYear) throws Exception {
     if (!loggedInUser.isPresent()) {
       context.getHttpServletResponse().sendRedirect("/");

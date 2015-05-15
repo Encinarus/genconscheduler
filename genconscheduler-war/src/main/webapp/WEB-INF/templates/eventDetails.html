@@ -56,14 +56,42 @@
             th:text="${event.eventTypeAbbreviation}">TDA</span></a></li>
         <li class="active"><span th:text="${event.gameId}">TDA12345</span></li>
       </ol>
-      <strong><span th:text="${event.readableDay}">Thursday</span> <span th:text="${event.readableStartTime}"></span> - <span th:text="${event.readableEndTime}"></span></strong>
-      (<a href="#" th:href="@{${event.genconUrl}}">Official Listing</a>)
       <p><em th:text="${event.shortDescription}">
         Short description of the event. You should have some knowledge of the game.
       </em></p>
       <p th:text="${event.longDescription}">
         Your quest tasks your party with ascending the tower of a mad gnome Tinkerer to find the missing dwarves of Icecrag Keep. This is the 2nd adventure of this year’s two-part epic event. Your event starts in a medieval inn where your party will have a private room with a TD Coach to prepare for your quest. Your two-hour quest tasks you with ascending the tower of a mad gnome Tinkerer to find the missing dwarves of Icecrag Keep. You will face perplexing puzzles &amp; exciting combats while immersed in a setting of a tower of “gnomepunk” design. There are two versions of this module. One is more combat-focused, while the other is more puzzle-oriented. The two versions have two unique rooms each, so if you play both you will see two new rooms in each adventure. As we did last year, we are presenting an epic two-part presentation. “Lycans Afoot!” is the first half of our 2013 grand adventure, and the second part is "Golembane". You can play either to have a great time, and for even more fun you should try playing both. Please arrive 10 minutes before your start time.
       </p>
+      <p>
+        <strong>Game System:</strong> <span th:text="${event.gameSystem}">Test</span>
+      </p>
+      <p>
+        <strong>Email:</strong> <span th:text="${event.spamEmail}">Test</span>
+      </p>
+      <div th:if="${hasRelatedEvents}">
+        <h3>Sessions <small>(<a onclick="toggleAvailable()">Toggle available</a>)</small></h3>
+        <div th:each="day : ${eventsByDay.keySet()}">
+          <h4 th:text="${day}">Wednesday</h4>
+          <div class="row">
+          <div class="col-xs-12 col-sm-6 col-md-4" th:each="r : ${eventsByDay.get(day)}">
+            <div style="display:inline-block; vertical-align: top;" th:if="${user != null}">
+              <button type="button"
+                      class="btn btn-default btn-sm"
+                      th:classappend="${user.isEventStarred(r)} ? active"
+                      th:id="'star-' + ${r.gameId}"
+                      th:onclick="'javascript:starEvent(&quot;' + ${r.gameId} + '&quot;)'">
+                <span class="glyphicon" th:classappend="${user.isEventStarred(r)} ? glyphicon-star : glyphicon-star-empty"></span>
+              </button>
+            </div>
+            <div style="display:inline-block;"><a href="/event/1234" th:href="@{${urls.sitePath('event') + r.gameId}}"><span th:text="${r.gameId}"></span></a>:
+              <span th:text="${r.readableStartTime}"></span> - <span th:text="${r.readableEndTime}"></span>
+              <br/> @ <span th:text="${event.location != null} ? ${event.location} + ' - ' + ${event.roomName} : 'Location to be determined'">location</span>
+              <br/> <span th:text="${r.ticketsAvailable}">12</span> of <span th:text="${r.maximumPlayers}">30</span> tickets available.
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
       <hr/>
       <h4>Details</h4>
       <div class="well well-sm">
@@ -76,16 +104,8 @@
           <div class="col-xs-12 col-md-10"><span th:text="${event.group}">Test</span></div>
         </div>
         <div class="row">
-          <div class="col-xs-12 col-md-2"><strong>Email:</strong></div>
-          <div class="col-xs-12 col-md-10"><span th:text="${event.spamEmail}">Test</span></div>
-        </div>
-        <div class="row">
           <div class="col-xs-12 col-md-2"><strong>Event Type:</strong></div>
           <div class="col-xs-12 col-md-10"><a href="#" th:href="@{${urls.sitePath('category') + event.eventTypeAbbreviation}}"><span th:text="${event.eventType}">Test</span></a></div>
-        </div>
-        <div class="row">
-          <div class="col-xs-12 col-md-2"><strong>Game System:</strong></div>
-          <div class="col-xs-12 col-md-10"><span th:text="${event.gameSystem}">Test</span></div>
         </div>
         <div class="row">
           <div class="col-xs-12 col-md-2"><strong>Rules Edition:</strong></div>
@@ -119,37 +139,8 @@
           <div class="col-xs-12 col-md-2"><strong>GM Names:</strong></div>
           <div class="col-xs-12 col-md-10"><span th:text="${event.readableGmNames}">Test</span></div>
         </div>
-        <div class="row">
-          <div class="col-xs-12 col-md-2"><strong>Location:</strong></div>
-          <div class="col-xs-12 col-md-10"><span th:text="${event.location}">Test</span> - <span th:text="${event.roomName}">Test</span></div>
-        </div>
       </div> <!-- Details Well -->
       <hr />
-      <div th:if="${hasRelatedEvents}">
-        <h3>Related Events <small>(<a onclick="toggleAvailable()">Toggle available</a>)</small></h3>
-        <div th:each="day : ${eventsByDay.keySet()}">
-          <h4 th:text="${day}">Wednesday</h4>
-          <div class="row">
-            <div class="col-xs-12 col-sm-6 col-md-4" th:each="r : ${eventsByDay.get(day)}"
-                 th:classappend="${r.hasTickets()}? 'ticketsAvailable' : 'noTickets'">
-              <div style="display:inline-block; vertical-align: top;" th:if="${user != null}">
-                <button type="button"
-                        class="btn btn-default btn-sm"
-                        th:classappend="${user.isEventStarred(r)} ? active"
-                        th:id="'star-' + ${r.gameId}"
-                        th:onclick="'javascript:starEvent(&quot;' + ${r.gameId} + '&quot;)'">
-                  <span class="glyphicon" th:classappend="${user.isEventStarred(r)} ? glyphicon-star : glyphicon-star-empty"></span>
-                </button>
-              </div>
-              <div style="display:inline-block;"><a href="/event/1234" th:href="@{${urls.sitePath('event') + r.gameId}}"><span th:text="${r.gameId}"></span></a>:
-                <span th:text="${r.readableStartTime}"></span> - <span th:text="${r.readableEndTime}"></span>
-                <br/>
-                <span th:text="${r.ticketsAvailable}">12</span> / <span th:text="${r.maximumPlayers}">30</span> tickets available.
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 </div>

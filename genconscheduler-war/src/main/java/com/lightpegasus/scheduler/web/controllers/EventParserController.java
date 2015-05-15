@@ -10,7 +10,9 @@ import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
@@ -22,10 +24,12 @@ import com.lightpegasus.scheduler.gencon.entity.BackgroundTaskStatus;
 import com.lightpegasus.scheduler.gencon.entity.GenconCategory;
 import com.lightpegasus.scheduler.gencon.entity.GenconEvent;
 import com.lightpegasus.scheduler.gencon.Queries;
+import com.lightpegasus.scheduler.gencon.entity.GenconEventGroup;
 import com.lightpegasus.scheduler.gencon.entity.User;
 import com.lightpegasus.scheduler.web.RequestHelpers;
+import com.lightpegasus.scheduler.web.SchedulerApp;
 import com.lightpegasus.scheduler.web.ThymeleafController;
-import org.apache.http.client.HttpClient;
+import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -34,12 +38,10 @@ import org.joda.time.DateTime;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.WebContext;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -51,6 +53,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
+import java.util.zip.ZipInputStream;
 
 import static com.googlecode.objectify.ObjectifyService.ofy;
 
@@ -65,8 +68,8 @@ public class EventParserController extends ThymeleafController {
   }
 
   @Override
-  public void doProcess(WebContext context, TemplateEngine engine, Optional<User> loggedInUser,
-      final int genconYear) throws Exception {
+  public void doProcess(SchedulerApp.PathBuilder pathBuilder, WebContext context, TemplateEngine engine, Optional<User> loggedInUser,
+                        final int genconYear) throws Exception {
     log.info("Got request for EventParser: " +
         RequestHelpers.asDebugString(context.getHttpServletRequest()));
 
@@ -89,11 +92,36 @@ public class EventParserController extends ThymeleafController {
     }
     final Map<String, Key<GenconEvent>> storedKeys = storedKeyBuilder.build();
 
+    // AtomicInteger for mutability while being final for an inner class.
     final AtomicInteger eventsSeen = new AtomicInteger(0);
+    final AtomicInteger eventGroupsSeen = new AtomicInteger(0);
     final Set<String> parsedEventKeys = new HashSet<>();
     final Map<String, GenconCategory> categories = new HashMap<>();
 
     final List<String> updatedEventKeys = new ArrayList<>();
+    parseAndSaveEvents(context, genconYear, parseVersion, forceReparse,
+        syncStatus, storedKeys, eventsSeen, eventGroupsSeen, parsedEventKeys, categories, updatedEventKeys);
+
+
+    context.getHttpServletResponse().setContentType("text/plain");
+    context.getHttpServletResponse().getWriter().println(
+        "Processed events - " + eventsSeen + " of " + parsedEventKeys.size());
+    context.getHttpServletResponse().getWriter().println(
+        "\nCategories: " + categories.size());
+    context.getHttpServletResponse().getWriter().println(
+        "\nGroups: " + eventGroupsSeen);
+  }
+
+  private void parseAndSaveEvents(WebContext context,
+                                  final int genconYear, ParseVersion parseVersion,
+                                  final Boolean forceReparse,
+                                  final BackgroundTaskStatus syncStatus,
+                                  final Map<String, Key<GenconEvent>> storedKeys,
+                                  final AtomicInteger eventsSeen,
+                                  final AtomicInteger eventGroupsSeen, final Set<String> parsedEventKeys,
+                                  final Map<String, GenconCategory> categories,
+                                  final List<String> updatedEventKeys) throws Exception {
+    final Set<Long> processedHashes = new HashSet<>();
     try (InputStream inputStream = loadGenconCsv(context, genconYear, parseVersion)) {
       final int eventsPerBatch = 100;
       final List<GenconEvent> eventsToSave = new ArrayList<>(eventsPerBatch);
@@ -106,7 +134,7 @@ public class EventParserController extends ThymeleafController {
       // the most recent update we've seen in a file
       final AtomicReference<DateTime> mostRecentUpdate = new AtomicReference<>(syncStatus.getSyncTime());
       GenconScheduleParser genconScheduleParser = new GenconScheduleParser(inputStream, genconYear,
-          new Function<GenconEvent, Void> (){
+          new Function<GenconEvent, Void>(){
             @Override
             public Void apply(GenconEvent event) {
               String eventType = event.getEventType();
@@ -116,6 +144,8 @@ public class EventParserController extends ThymeleafController {
               }
 
               categories.get(eventType).addEvent(event);
+
+              processedHashes.add(event.getClusterHash());
 
               parsedEventKeys.add(event.getEventKey());
               DateTime eventLastModified = event.getLastModified();
@@ -152,19 +182,34 @@ public class EventParserController extends ThymeleafController {
       ofy().save().entities(categories.values()).now();
 
       // Now to figure out which events to delete
-      // TODO: Once we have starred events, we'll need to notify people
+      // TODO: Figure out how to notify people that their starred events were removed
       markEventsDeleted(mostRecentUpdate.get(), storedKeys, parsedEventKeys, index);
+
+      Queries queries = new Queries();
+      eventGroupsSeen.addAndGet(processedHashes.size());
+      log.info("Generating " + processedHashes.size() + " groups ");
+      int processedGroupCount = 0;
+      for (List<Long> eventGroupHashPartition : Iterables.partition(processedHashes, eventsPerBatch)) {
+        List<GenconEventGroup> eventGroups = new ArrayList<>(eventsPerBatch);
+        for (long eventGroupHash : eventGroupHashPartition) {
+          ImmutableList<GenconEvent> clusteredEvents = queries.loadEventsByHash(eventGroupHash, genconYear);
+          if (clusteredEvents.isEmpty()) {
+            // This could happen if events were deleted, maybe.
+            log.warning("No events in cluster, for hash " + eventGroupHash);
+            continue;
+          }
+          eventGroups.add(new GenconEventGroup(clusteredEvents));
+        }
+        processedGroupCount += eventGroups.size();
+        log.info("Processed " + processedGroupCount + "/" + processedHashes.size() + " groups");
+        ofy().save().entities(eventGroups).now();
+      }
 
       log.info("All entities saved");
 
       syncStatus.setSyncTime(mostRecentUpdate.get());
       ofy().save().entity(syncStatus);
     }
-    context.getHttpServletResponse().setContentType("text/plain");
-    context.getHttpServletResponse().getWriter().println(
-        "Processed events - " + eventsSeen + " of " + parsedEventKeys.size());
-    context.getHttpServletResponse().getWriter().println(
-        "Categories: " + categories.size());
   }
 
   private static Multimap<String, String> eventTypeKeywordMap = HashMultimap.create();
@@ -299,18 +344,48 @@ public class EventParserController extends ThymeleafController {
     } else if (year == 2014 && parseVersion == ParseVersion.V2) {
       return new FileInputStream(basePath + "events.may.13.2014.xlsx");
     } else if (year == 2014 && parseVersion == ParseVersion.LIVE) {
-      String genconUrl = "http://www.gencon.com/downloads/events_excel";
-      HttpGet httpGet = new HttpGet(genconUrl);
-
-      log.info("Requesting excel file from " + genconUrl);
-      try(CloseableHttpClient httpClient = HttpClients.createDefault();
-          CloseableHttpResponse response = httpClient.execute(httpGet)) {
-        byte[] excelBytes = ByteStreams.toByteArray(response.getEntity().getContent());
-
-        return new ByteArrayInputStream(excelBytes);
-      }
+      //String genconUrl = "http://community.gencon.com/files/folders/345723/download.aspx";
+      return parseLive2014();
+    } else if (year == 2015) {
+      return parseLive2015();
     } else {
       throw new UnsupportedOperationException("Year not supported: " + year);
+    }
+  }
+
+  private InputStream parseLive2015() throws IOException {
+    String genconUrl = "https://www.gencon.com/downloads/events.zip";
+    //String genconUrl = "http://www.gencon.com/downloads/events_excel";
+
+    HttpGet httpGet = new HttpGet(genconUrl);
+
+    log.info("Requesting excel file from " + genconUrl);
+    try (CloseableHttpClient httpClient = HttpClients.createDefault();
+         CloseableHttpResponse response = httpClient.execute(httpGet)) {
+      int statusCode = response.getStatusLine().getStatusCode();
+      log.info("Got status: " + statusCode);
+
+      HttpEntity entity = response.getEntity();
+      ZipInputStream compressedInput = new ZipInputStream(entity.getContent());
+      // Only 1 entry in the archive, but we need to advance the stream to that point
+      compressedInput.getNextEntry();
+
+      byte[] excelBytes = ByteStreams.toByteArray(compressedInput);
+
+      return new ByteArrayInputStream(excelBytes);
+    }
+  }
+
+  private InputStream parseLive2014() throws IOException {
+    String genconUrl = "http://www.gencon.com/downloads/events_excel";
+    HttpGet httpGet = new HttpGet(genconUrl);
+
+    log.info("Requesting excel file from " + genconUrl);
+    try (CloseableHttpClient httpClient = HttpClients.createDefault();
+         CloseableHttpResponse response = httpClient.execute(httpGet)) {
+      byte[] excelBytes = ByteStreams.toByteArray(response.getEntity().getContent());
+
+      return new ByteArrayInputStream(excelBytes);
     }
   }
 

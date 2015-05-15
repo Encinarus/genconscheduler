@@ -13,8 +13,8 @@ import com.google.common.net.UrlEscapers;
 import com.lightpegasus.scheduler.gencon.entity.GenconEvent;
 import com.lightpegasus.scheduler.gencon.entity.User;
 import com.lightpegasus.scheduler.web.EventFilters;
+import com.lightpegasus.scheduler.web.SchedulerApp;
 import com.lightpegasus.scheduler.web.ThymeleafController;
-import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
 import org.joda.time.Interval;
 import org.thymeleaf.TemplateEngine;
@@ -31,10 +31,10 @@ import java.util.List;
  */
 public class UserStarredController extends ThymeleafController {
   @Override
-  protected void doProcess(WebContext context, TemplateEngine engine,
-      Optional<User> loggedInUser, int genconYear) throws Exception {
+  protected void doProcess(SchedulerApp.PathBuilder pathBuilder, WebContext context, TemplateEngine engine,
+                           Optional<User> loggedInUser, int genconYear) throws Exception {
 
-    List<GenconEvent> starredEvents = loggedInUser.get().getStarredEvents();
+    List<GenconEvent> starredEvents = loggedInUser.get().getStarredEvents(genconYear);
 
     context.setVariable("eventsByDay", EventFilters.eventsByDay(starredEvents));
     context.setVariable("eventsByCategory", EventFilters.eventsByCategory(starredEvents));

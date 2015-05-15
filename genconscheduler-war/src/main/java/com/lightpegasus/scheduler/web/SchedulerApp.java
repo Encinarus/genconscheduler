@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Range;
 import com.google.common.escape.Escaper;
 import com.google.common.net.UrlEscapers;
 import com.googlecode.objectify.ObjectifyService;
@@ -17,6 +18,7 @@ import com.lightpegasus.objectify.DurationLongValueTranslatorFactory;
 import com.lightpegasus.scheduler.gencon.entity.BackgroundTaskStatus;
 import com.lightpegasus.scheduler.gencon.entity.GenconCategory;
 import com.lightpegasus.scheduler.gencon.entity.GenconEvent;
+import com.lightpegasus.scheduler.gencon.entity.GenconEventGroup;
 import com.lightpegasus.scheduler.gencon.entity.SearchQuery;
 import com.lightpegasus.scheduler.gencon.entity.UpdateHistory;
 import com.lightpegasus.scheduler.gencon.entity.User;
@@ -26,6 +28,7 @@ import com.lightpegasus.scheduler.web.controllers.CategoryListController;
 import com.lightpegasus.scheduler.web.controllers.DeleteGenconYearController;
 import com.lightpegasus.scheduler.web.controllers.EventDetailsController;
 import com.lightpegasus.scheduler.web.controllers.EventParserController;
+import com.lightpegasus.scheduler.web.controllers.NewCategoryDetailsController;
 import com.lightpegasus.scheduler.web.controllers.SearchController;
 import com.lightpegasus.scheduler.web.controllers.StarController;
 import com.lightpegasus.scheduler.web.controllers.StaticTemplateController;
@@ -66,7 +69,8 @@ public class SchedulerApp {
     }
 
     private LocalPath(int year, String handler, String remainder, Multimap<String, String> params) {
-      Preconditions.checkArgument(year == 2013 || year == 2014, "Unsupported year %s", year);
+      Preconditions.checkArgument(Range.openClosed(2013, 2015).contains(year),
+          "Unsupported year %s", year);
       handler = Strings.nullToEmpty(handler).trim();
       remainder = Strings.nullToEmpty(remainder).trim();
 
@@ -106,10 +110,14 @@ public class SchedulerApp {
    * Utility class for the templates to reference, to generate site links.
    */
   public static class PathBuilder {
-    private final int year;
+    private int year;
 
-    public PathBuilder(int year) {
-      this.year = year;
+    public PathBuilder(int defaultYear) {
+      this.year = defaultYear;
+    }
+
+    public void setYear(int parsedYear) {
+      this.year = parsedYear;
     }
 
     public String sitePath(String path) {
@@ -194,7 +202,8 @@ public class SchedulerApp {
     controllers = ImmutableMap.<String, ThymeleafController>builder()
         .put("categories", new CategoryListController())
         .put("event", new EventDetailsController())
-        .put("category", new CategoryDetailsController())
+        .put("oldCategory", new CategoryDetailsController())
+        .put("category", new NewCategoryDetailsController())
         .put("about", new StaticTemplateController("about"))
         .put("search", new SearchController())
         .put("advancedSearch", new AdvancedSearchController())
@@ -229,6 +238,7 @@ public class SchedulerApp {
 
     // Now register entities.
     ObjectifyService.register(GenconEvent.class);
+    ObjectifyService.register(GenconEventGroup.class);
     ObjectifyService.register(GenconCategory.class);
     ObjectifyService.register(SearchQuery.class);
     ObjectifyService.register(BackgroundTaskStatus.class);

@@ -14,6 +14,7 @@ import com.lightpegasus.scheduler.gencon.entity.User;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.WebContext;
 
+import javax.naming.directory.SearchResult;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -27,6 +28,7 @@ import static com.googlecode.objectify.ObjectifyService.ofy;
  * ThymeleafController handles setting the login / logout urls.
  */
 public abstract class ThymeleafController {
+  private static Logger staticLog = Logger.getLogger(ThymeleafController.class.getSimpleName());
   protected Logger log = Logger.getLogger(getClass().getSimpleName());
 
   public final void process(WebContext context, TemplateEngine engine) throws Exception {
@@ -34,8 +36,12 @@ public abstract class ThymeleafController {
 
     String requestURI = context.getHttpServletRequest().getRequestURI();
 
-    SchedulerApp.PathBuilder pathBuilder = new SchedulerApp.PathBuilder(2014);
+    // We default to 2015 for the year
+    SchedulerApp.PathBuilder pathBuilder = new SchedulerApp.PathBuilder(2015);
     SchedulerApp.LocalPath localPath = pathBuilder.parseUrl(requestURI);
+    // Then update the path builder based on the parsed year
+    log.info("Parsed year: " + localPath.year);
+    pathBuilder.setYear(localPath.year);
 
     context.setVariable("urls", pathBuilder);
     context.setVariable("year", localPath.year);
@@ -75,7 +81,7 @@ public abstract class ThymeleafController {
       context.setVariable("isAdmin", false);
     }
 
-    doProcess(context, engine, Optional.fromNullable(loggedInUser), localPath.year);
+    doProcess(pathBuilder, context, engine, Optional.fromNullable(loggedInUser), localPath.year);
   }
 
   protected boolean requiresLogin() {
@@ -86,12 +92,13 @@ public abstract class ThymeleafController {
     return false;
   }
 
-  protected abstract void doProcess(WebContext context, TemplateEngine engine,
-      Optional<User> loggedInUser, int genconYear) throws Exception;
+  protected abstract void doProcess(SchedulerApp.PathBuilder pathBuilder, WebContext context, TemplateEngine engine,
+                                    Optional<User> loggedInUser, int genconYear) throws Exception;
 
   protected static List<SearchResult> composeSearchResults(Collection<GenconEvent> foundEvents) {
     // Now cluster the events
     List<SearchResult> results = new ArrayList<>();
+    staticLog.info("Clustering " + foundEvents.size() + "events");
     Multimap<Long, GenconEvent> clusteredEvents = EventFilters.clusterEvents(foundEvents);
     for (Long clusterHash : clusteredEvents.keySet()) {
       Collection<GenconEvent> cluster = clusteredEvents.get(clusterHash);

@@ -2,6 +2,8 @@ package com.lightpegasus.scheduler.gencon.entity;
 
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
@@ -44,6 +46,16 @@ public class User {
             return input.get();
           }
         }));
+  }
+
+  public List<GenconEvent> getStarredEvents(final int year) {
+    return FluentIterable.from(getStarredEvents())
+        .filter(new Predicate<GenconEvent>() {
+          @Override
+          public boolean apply(GenconEvent genconEvent) {
+            return genconEvent.getYear() == year;
+          }
+        }).toList();
   }
 
   public enum Preference {

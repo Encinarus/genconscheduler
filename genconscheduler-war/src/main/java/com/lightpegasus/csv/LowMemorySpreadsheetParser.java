@@ -106,6 +106,12 @@ public class LowMemorySpreadsheetParser implements Closeable {
 
         String cellTypeAttribute = attributes.getValue("t");
 
+        // I came up with these largely by looking at the source for POI's parser + trial & error,
+        // and looking at the actual gencon event list file.
+        //
+        // For the apache POI source, check out XSSFSheetXMLHandler.startElement
+        // https://svn.apache.org/repos/asf/poi/trunk/src/ooxml/java/org/apache/poi/xssf/eventusermodel/XSSFSheetXMLHandler.java
+        //
         if ("2".equals(attributes.getValue("s")) && cellTypeAttribute == null) {
           localCellType = CellType.DATE;
         } else if ("n".equals(cellTypeAttribute)) {

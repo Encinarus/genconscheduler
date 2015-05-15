@@ -16,7 +16,7 @@
 
   <properties>
     <appengine.app.version>2-war</appengine.app.version>
-    <appengine.target.version>1.9.5</appengine.target.version>
+    <appengine.target.version>1.9.19</appengine.target.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
@@ -74,7 +74,7 @@
     <dependency>
       <groupId>org.thymeleaf</groupId>
       <artifactId>thymeleaf</artifactId>
-      <version>2.1.4.RELEASE</version>
+      <version>2.1.2.RELEASE</version>
     </dependency>
 
     <dependency>

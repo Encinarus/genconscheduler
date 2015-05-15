@@ -1,6 +1,5 @@
 package com.lightpegasus.scheduler.web.controllers;
 
-import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.collect.Iterables;
@@ -8,6 +7,7 @@ import com.google.common.collect.Multimap;
 import com.lightpegasus.scheduler.gencon.entity.GenconEvent;
 import com.lightpegasus.scheduler.gencon.entity.User;
 import com.lightpegasus.scheduler.web.RequestHelpers;
+import com.lightpegasus.scheduler.web.SchedulerApp;
 import com.lightpegasus.scheduler.web.ThymeleafController;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.WebContext;
@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 import static com.googlecode.objectify.ObjectifyService.ofy;
 
@@ -26,8 +25,8 @@ import static com.googlecode.objectify.ObjectifyService.ofy;
  */
 public class StarController extends ThymeleafController {
   @Override
-  protected void doProcess(WebContext context, TemplateEngine engine, Optional<User> loggedInUser,
-      int genconYear) throws Exception {
+  protected void doProcess(SchedulerApp.PathBuilder pathBuilder, WebContext context, TemplateEngine engine, Optional<User> loggedInUser,
+                           int genconYear) throws Exception {
     boolean isPost = context.getHttpServletRequest().getMethod().equals("POST");
 
     User user = loggedInUser.get();
@@ -44,7 +43,7 @@ public class StarController extends ThymeleafController {
   private void handleGet(WebContext context, int genconYear, User user) throws IOException {
     StringBuilder responseBuilder = new StringBuilder("{[");
 
-    for (GenconEvent starredEvent : user.getStarredEvents()) {
+    for (GenconEvent starredEvent : user.getStarredEvents(genconYear)) {
       responseBuilder.append("\"").append(starredEvent.getGameId()).append("\", \n");
     }
 

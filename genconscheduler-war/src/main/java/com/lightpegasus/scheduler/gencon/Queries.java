@@ -7,6 +7,7 @@ import com.googlecode.objectify.ObjectifyService;
 import com.lightpegasus.scheduler.gencon.entity.BackgroundTaskStatus;
 import com.lightpegasus.scheduler.gencon.entity.GenconCategory;
 import com.lightpegasus.scheduler.gencon.entity.GenconEvent;
+import com.lightpegasus.scheduler.gencon.entity.GenconEventGroup;
 
 import java.util.List;
 import java.util.logging.Logger;
@@ -39,11 +40,24 @@ public class Queries {
         ofy().load().type(GenconEvent.class).id(GenconEvent.idForYear(genconYear, eventId)).now());
   }
 
-  public ImmutableList<GenconEvent> loadSimilarEvents(GenconEvent event) {
+  public ImmutableList<GenconEvent> loadEventsByHash(long clusterHash, long year) {
     return ImmutableList.copyOf(ofy().load().type(GenconEvent.class)
-        .filter("clusterHash", event.getClusterHash())
-        .filter("year", event.getYear())
+        .filter("clusterHash", clusterHash)
+        .filter("year", year)
+        .orderKey(false)
         .list());
+  }
+
+  public ImmutableList<GenconEventGroup> loadEventsForCategory(
+      String eventTypeAbbreviation, int genconYear) {
+    return ImmutableList.copyOf(ofy().load().type(GenconEventGroup.class)
+        .filter("eventTypeAbbreviation", eventTypeAbbreviation)
+        .filter("year", genconYear)
+        .list());
+  }
+
+  public ImmutableList<GenconEvent> loadSimilarEvents(GenconEvent event) {
+    return loadEventsByHash(event.getClusterHash(), event.getYear());
   }
 
   public ImmutableList<GenconCategory> allCategories(long genconYear) {

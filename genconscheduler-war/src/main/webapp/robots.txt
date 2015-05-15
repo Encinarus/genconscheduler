@@ -1,3 +1,7 @@
 # Don't use up my quota bro!
+User-agent: MJ12bot
+Disallow: /
+
 User-agent: *
+Disallow: /2014/
 Crawl-delay: 300
