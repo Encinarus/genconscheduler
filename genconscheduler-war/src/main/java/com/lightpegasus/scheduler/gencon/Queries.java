@@ -2,6 +2,7 @@ package com.lightpegasus.scheduler.gencon;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import com.googlecode.objectify.Objectify;
 import com.googlecode.objectify.ObjectifyService;
 import com.lightpegasus.scheduler.gencon.entity.BackgroundTaskStatus;
@@ -65,5 +66,13 @@ public class Queries {
         .type(GenconCategory.class)
         .filter("year", genconYear)
         .list());
+  }
+
+  public GenconEventGroup loadGenconEventGroup(long genconYear, long clusterHash) {
+    return ofy().load().type(GenconEventGroup.class)
+        .filter("year", genconYear)
+        .filter("clusterHash", clusterHash)
+        .first()
+        .now();
   }
 }

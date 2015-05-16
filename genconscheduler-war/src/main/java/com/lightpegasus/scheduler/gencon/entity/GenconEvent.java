@@ -88,6 +88,10 @@ public class GenconEvent {
     this.status = status;
   }
 
+  public boolean getCanceled() {
+    return status == Status.DEAD;
+  }
+
   public void setTournament(Boolean isTournament) {
     this.isTournament = isTournament;
   }

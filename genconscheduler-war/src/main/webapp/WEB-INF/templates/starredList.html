@@ -82,7 +82,8 @@
             <h3 th:text="${day}">Wednesday</h3>
 
             <div style="padding-left: 3em;" th:each="r : ${eventsByDay.get(day)}">
-              <ul class="list-unstyled">
+              <ul class="list-unstyled"
+                  th:classappend="${r.canceled} ? bg-danger">
                 <li>
                   <strong>
                     <span th:text="${r.readableStartTime}">8:00am</span> - <span th:text="${r.readableEndTime}">10:00pm</span>
@@ -90,6 +91,7 @@
                   <span th:text="${r.title}">Lycans Afoot!</span> (<a href="#" th:href="@{${r.genconUrl}}">Official Listing</a>)</li>
                 <li style="padding-left: 2em"><a href="#" th:href="@{${urls.sitePath('category') + r.eventTypeAbbreviation}}" th:text="${r.eventType}">TDA - True Dungeon Adventures</a>
                   <span th:unless="${r.gameSystem == null &amp;&amp; r.rulesEdition == null}" th:text="'/ ' + ${r.gameSystem} + ' ' + ${r.rulesEdition}"></span></li>
+                <li th:if="${r.canceled}"><strong>This event has been canceled.</strong></li>
                 <li style="padding-left: 2em" th:text="${r.shortDescription}">Face off against werewolves in True Dungeon!</li>
               </ul>
             </div>
@@ -99,12 +101,16 @@
           <div th:each="category : ${eventsByCategory.keySet()}">
             <h3 th:text="${category}">Category</h3>
 
-            <div style="padding-left: 3em;" th:each="r : ${eventsByCategory.get(category)}">
-              <ul class="list-unstyled">
+            <div style="padding-left: 3em;"
+                 th:each="r : ${eventsByCategory.get(category)}">
+              <ul class="list-unstyled"
+                  th:classappend="${r.canceled} ? bg-danger">
                 <li><strong>
                   <span th:text="${r.readableDay}">Thursday</span> <span th:text="${r.readableStartTime}">8:00am</span> - <span th:text="${r.readableEndTime}">10:00pm</span>
                 </strong>: <a href="/event/1234" th:href="@{${urls.sitePath('event') + r.gameId}}"><span th:text="${r.gameId}">TDA1234567</span></a>
-                  <span th:text="${r.title}">Lycans Afoot!</span> (<a href="#" th:href="@{${r.genconUrl}}">Official Listing</a>)</li>
+                  <span th:text="${r.title}">Lycans Afoot!</span> (<a href="#" th:href="@{${r.genconUrl}}">Official Listing</a>)
+                </li>
+                <li th:if="${r.canceled}"><strong>This event has been canceled.</strong></li>
                 <li><span th:unless="${r.gameSystem == null &amp;&amp; r.rulesEdition == null}" th:text="${r.gameSystem} + ' ' + ${r.rulesEdition}"></span></li>
                 <li style="padding-left: 2em" th:text="${r.shortDescription}">Face off against werewolves in True Dungeon!</li>
               </ul>

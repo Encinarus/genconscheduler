@@ -46,7 +46,10 @@
               th:classappend="${areAllStarred} ? active">
         <span class="glyphicon" th:classappend="${areAllStarred} ? glyphicon-star : glyphicon-star-empty"></span>
       </button>
-    </span><span th:text="${event.title}">True Dungeon Adventures - Lycan's afoot!</span> <small>(<span th:text="${event.ticketsAvailable}">10</span> ticket<span th:if="${event.ticketsAvailable != 1}">s</span>, $<span th:text="${event.dollarCost}">10</span> each)</small>
+    </span>
+    <span th:text="${event.title}">True Dungeon Adventures - Lycan's afoot!</span>
+    <small th:if="${group != null}">(<span th:text="${group.ticketsAvailable}">10</span> ticket<span th:if="${group.ticketsAvailable != 1}">s</span>, $<span th:text="${event.dollarCost}">10</span> each)</small>
+    <small th:if="${group == null}">This event has been canceled.</small>
   </h1>
   <div class="row">
     <div class="main">
@@ -73,7 +76,9 @@
         <div th:each="day : ${eventsByDay.keySet()}">
           <h4 th:text="${day}">Wednesday</h4>
           <div class="row">
-          <div class="col-xs-12 col-sm-6 col-md-4" th:each="r : ${eventsByDay.get(day)}">
+          <div class="col-xs-12 col-sm-6 col-md-4"
+               th:each="r : ${eventsByDay.get(day)}"
+               th:classappend="${r.canceled} ? bg-danger">
             <div style="display:inline-block; vertical-align: top;" th:if="${user != null}">
               <button type="button"
                       class="btn btn-default btn-sm"
@@ -83,10 +88,11 @@
                 <span class="glyphicon" th:classappend="${user.isEventStarred(r)} ? glyphicon-star : glyphicon-star-empty"></span>
               </button>
             </div>
-            <div style="display:inline-block;"><a href="/event/1234" th:href="@{${urls.sitePath('event') + r.gameId}}"><span th:text="${r.gameId}"></span></a>:
-              <span th:text="${r.readableStartTime}"></span> - <span th:text="${r.readableEndTime}"></span>
-              <br/> @ <span th:text="${event.location != null} ? ${event.location} + ' - ' + ${event.roomName} : 'Location to be determined'">location</span>
-              <br/> <span th:text="${r.ticketsAvailable}">12</span> of <span th:text="${r.maximumPlayers}">30</span> tickets available.
+            <div style="display:inline-block;">
+              <a href="/event/1234" th:href="@{${urls.sitePath('event') + r.gameId}}"><span th:text="${r.gameId}"></span></a> (<a href="#" th:href="@{${r.genconUrl}}">Official Listing</a>):
+              <br/> <span th:text="${r.readableStartTime}"></span> - <span th:text="${r.readableEndTime}"></span> @ <span th:text="${event.location != null} ? ${event.location} + ' - ' + ${event.roomName} : 'Location TBD'">location</span>
+              <br/> <span th:if="${!r.canceled}"><span th:text="${r.ticketsAvailable}">12</span> of <span th:text="${r.maximumPlayers}">30</span> tickets available.</span>
+              <span th:if="${r.canceled}">This event has been canceled.</span>
             </div>
           </div>
         </div>

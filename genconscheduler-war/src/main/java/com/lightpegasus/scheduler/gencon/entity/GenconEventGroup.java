@@ -65,7 +65,7 @@ public class GenconEventGroup {
   }
 
   public void mergeEvent(GenconEvent event) {
-    if (event.getClusterHash() != clusterHash) {
+    if (event.getClusterHash() != clusterHash || event.getCanceled()) {
       return;
     }
 
@@ -95,6 +95,14 @@ public class GenconEventGroup {
         break;
     }
 
+  }
+
+  public int getTicketsAvailable() {
+    return wedAvailable + thursAvailable + friAvailable + satAvailable + sunAvailable;
+  }
+
+  public int getOpenSessions() {
+    return wedOpenEvents + thursOpenEvents + friOpenEvents + satOpenEvents + sunOpenEvents;
   }
 
   public String getClusterId() {

@@ -8,6 +8,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import com.lightpegasus.scheduler.gencon.entity.GenconEvent;
 import com.lightpegasus.scheduler.gencon.Queries;
+import com.lightpegasus.scheduler.gencon.entity.GenconEventGroup;
 import com.lightpegasus.scheduler.gencon.entity.User;
 import com.lightpegasus.scheduler.web.EventFilters;
 import com.lightpegasus.scheduler.web.SchedulerApp;
@@ -21,7 +22,8 @@ import java.util.List;
 
 public class EventDetailsController extends ThymeleafController {
   @Override
-  public void doProcess(SchedulerApp.PathBuilder pathBuilder, WebContext context, TemplateEngine engine, Optional<User> loggedInUser,
+  public void doProcess(SchedulerApp.PathBuilder pathBuilder, WebContext context,
+                        TemplateEngine engine, Optional<User> loggedInUser,
                         int genconYear) throws Exception {
     String requestURI = context.getHttpServletRequest().getRequestURI();
     List<String> splitUrl = Splitter.on("/").omitEmptyStrings().splitToList(requestURI);
@@ -35,8 +37,11 @@ public class EventDetailsController extends ThymeleafController {
       event = queries.loadGenconEvent(eventId, genconYear).orNull();
 
       if (event != null) {
+        GenconEventGroup eventGroup = queries.loadGenconEventGroup(
+            genconYear, event.getClusterHash());
         List<GenconEvent> relatedEvents = ImmutableList.copyOf(queries.loadSimilarEvents(event));
 
+        context.setVariable("group", eventGroup);
         context.setVariable("event", event);
         context.setVariable("hasRelatedEvents", !relatedEvents.isEmpty());
         Multimap<String, GenconEvent> relatedEventsByDay = EventFilters.eventsByDay(relatedEvents);

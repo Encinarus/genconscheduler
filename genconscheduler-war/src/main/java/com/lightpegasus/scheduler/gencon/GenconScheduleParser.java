@@ -79,7 +79,8 @@ public class GenconScheduleParser implements Closeable {
       event.setMaterialsProvided(row.booleanField("Materials Provided"));
       event.setStartTime(row.mdyDateTimeField("Start Date & Time"));
       event.setDuration(row.multipliedIntegerField("Duration", 60));
-      event.setEndTime(row.mdyDateTimeField("End Date & Time"));
+      event.setEndTime(event.getStartTime().plus(event.getDuration()));
+      // event.setEndTime(row.mdyDateTimeField("End Date & Time"));
       event.setGmNames(row.stringListField("GM Names"));
       event.setWebsite(row.stringField("Website"));
       event.setEmail(row.stringField("Email"));

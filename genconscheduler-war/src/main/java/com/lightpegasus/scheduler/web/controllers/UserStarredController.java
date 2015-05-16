@@ -38,7 +38,7 @@ public class UserStarredController extends ThymeleafController {
 
     context.setVariable("eventsByDay", EventFilters.eventsByDay(starredEvents));
     context.setVariable("eventsByCategory", EventFilters.eventsByCategory(starredEvents));
-    context.setVariable("calendarEvents", partitionEvents(starredEvents));
+    context.setVariable("calendarEvents", partitionEventsForCalendar(starredEvents));
 
     engine.process("starredList", context, context.getHttpServletResponse().getWriter());
   }
@@ -134,12 +134,14 @@ public class UserStarredController extends ThymeleafController {
     }
   }
 
-  public List<CalendarEvent> partitionEvents(Collection<GenconEvent> eventsToCluster) {
-    // First, cluster by hash
+  public List<CalendarEvent> partitionEventsForCalendar(Collection<GenconEvent> eventsToCluster) {
+    // First, cluster by hash, skipping any which have been canceled
     Multimap<Long, GenconEvent> hashClusteredEvents = HashMultimap.create();
 
     for (GenconEvent event : eventsToCluster) {
-      hashClusteredEvents.put(event.getClusterHash(), event);
+      if (!event.getCanceled()) {
+        hashClusteredEvents.put(event.getClusterHash(), event);
+      }
     }
 
     List<CalendarEvent> calendarEvents = new ArrayList<>();
