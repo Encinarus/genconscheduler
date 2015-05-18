@@ -6,8 +6,8 @@ import com.google.common.collect.Iterables;
 import com.lightpegasus.scheduler.gencon.entity.GenconCategory;
 import com.lightpegasus.scheduler.gencon.Queries;
 import com.lightpegasus.scheduler.gencon.entity.User;
-import com.lightpegasus.scheduler.web.SchedulerApp;
 import com.lightpegasus.scheduler.web.ThymeleafController;
+import com.lightpegasus.scheduler.web.paths.PathBuilder;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.WebContext;
 
@@ -18,7 +18,7 @@ import java.util.List;
  */
 public class CategoryListController extends ThymeleafController {
   @Override
-  public void doProcess(SchedulerApp.PathBuilder pathBuilder, WebContext context, TemplateEngine engine, Optional<User> loggedInUser,
+  public void doProcess(PathBuilder pathBuilder, WebContext context, TemplateEngine engine, Optional<User> loggedInUser,
                         int genconYear) throws Exception {
     Queries queries = new Queries();
 

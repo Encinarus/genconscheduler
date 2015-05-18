@@ -8,13 +8,14 @@ import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import com.lightpegasus.scheduler.gencon.Queries;
-import com.lightpegasus.scheduler.gencon.entity.BackgroundTaskStatus;
 import com.lightpegasus.scheduler.gencon.entity.GenconEvent;
 import com.lightpegasus.scheduler.gencon.entity.User;
+import com.lightpegasus.scheduler.web.paths.LocalPath;
+import com.lightpegasus.scheduler.web.paths.PathBuilder;
+import com.lightpegasus.scheduler.web.paths.PlannerPaths;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.WebContext;
 
-import javax.naming.directory.SearchResult;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -37,17 +38,16 @@ public abstract class ThymeleafController {
     String requestURI = context.getHttpServletRequest().getRequestURI();
 
     // We default to 2015 for the year
-    SchedulerApp.PathBuilder pathBuilder = new SchedulerApp.PathBuilder(2015);
-    SchedulerApp.LocalPath localPath = pathBuilder.parseUrl(requestURI);
+    PathBuilder pathBuilder = new PathBuilder(requestURI);
+    LocalPath localPath = pathBuilder.getLocalPath();
     // Then update the path builder based on the parsed year
-    log.info("Parsed year: " + localPath.year);
-    pathBuilder.setYear(localPath.year);
+    log.info("Parsed year: " + localPath.getYear());
 
     context.setVariable("urls", pathBuilder);
-    context.setVariable("year", localPath.year);
+    context.setVariable("year", localPath.getYear());
     User loggedInUser = null;
 
-    context.setVariable("syncStatus", new Queries().getSyncStatus(localPath.year));
+    context.setVariable("syncStatus", new Queries().getSyncStatus(localPath.getYear()));
 
     if (userService.isUserLoggedIn()) {
       context.setVariable("authText", "Sign out");
@@ -62,13 +62,8 @@ public abstract class ThymeleafController {
       }
 
       com.google.appengine.api.users.User googleUser = userService.getCurrentUser();
-      loggedInUser = ofy().load().type(User.class).id(googleUser.getUserId()).now();
-
-      if (loggedInUser == null) {
-        loggedInUser = new User(googleUser.getUserId(),
-            googleUser.getEmail(), googleUser.getNickname());
-        ofy().save().entity(loggedInUser).now();
-      }
+      loggedInUser = new Queries().loadOrCreateUser(
+          googleUser.getUserId(), googleUser.getEmail(), googleUser.getNickname());
 
       context.setVariable("user", loggedInUser);
     } else if (requiresLogin() || requiresAdmin()) {
@@ -81,7 +76,7 @@ public abstract class ThymeleafController {
       context.setVariable("isAdmin", false);
     }
 
-    doProcess(pathBuilder, context, engine, Optional.fromNullable(loggedInUser), localPath.year);
+    doProcess(pathBuilder, context, engine, Optional.fromNullable(loggedInUser), localPath.getYear());
   }
 
   protected boolean requiresLogin() {
@@ -92,7 +87,7 @@ public abstract class ThymeleafController {
     return false;
   }
 
-  protected abstract void doProcess(SchedulerApp.PathBuilder pathBuilder, WebContext context, TemplateEngine engine,
+  protected abstract void doProcess(PathBuilder pathBuilder, WebContext context, TemplateEngine engine,
                                     Optional<User> loggedInUser, int genconYear) throws Exception;
 
   protected static List<SearchResult> composeSearchResults(Collection<GenconEvent> foundEvents) {

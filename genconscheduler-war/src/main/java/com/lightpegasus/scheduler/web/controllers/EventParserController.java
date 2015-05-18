@@ -10,7 +10,6 @@ import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
-import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -27,8 +26,8 @@ import com.lightpegasus.scheduler.gencon.Queries;
 import com.lightpegasus.scheduler.gencon.entity.GenconEventGroup;
 import com.lightpegasus.scheduler.gencon.entity.User;
 import com.lightpegasus.scheduler.web.RequestHelpers;
-import com.lightpegasus.scheduler.web.SchedulerApp;
 import com.lightpegasus.scheduler.web.ThymeleafController;
+import com.lightpegasus.scheduler.web.paths.PathBuilder;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -68,7 +67,7 @@ public class EventParserController extends ThymeleafController {
   }
 
   @Override
-  public void doProcess(SchedulerApp.PathBuilder pathBuilder, WebContext context, TemplateEngine engine, Optional<User> loggedInUser,
+  public void doProcess(PathBuilder pathBuilder, WebContext context, TemplateEngine engine, Optional<User> loggedInUser,
                         final int genconYear) throws Exception {
     log.info("Got request for EventParser: " +
         RequestHelpers.asDebugString(context.getHttpServletRequest()));

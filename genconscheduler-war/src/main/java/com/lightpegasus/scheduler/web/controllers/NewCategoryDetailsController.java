@@ -4,16 +4,13 @@ import com.google.common.base.Optional;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.ListMultimap;
-import com.lightpegasus.scheduler.gencon.Queries;
-import com.lightpegasus.scheduler.gencon.entity.GenconEvent;
 import com.lightpegasus.scheduler.gencon.entity.GenconEventGroup;
 import com.lightpegasus.scheduler.gencon.entity.User;
-import com.lightpegasus.scheduler.web.SchedulerApp;
 import com.lightpegasus.scheduler.web.ThymeleafController;
+import com.lightpegasus.scheduler.web.paths.PathBuilder;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.WebContext;
 
@@ -40,7 +37,7 @@ public class NewCategoryDetailsController  extends ThymeleafController {
   );
 
   @Override
-  protected void doProcess(SchedulerApp.PathBuilder pathBuilder, WebContext context, TemplateEngine engine,
+  protected void doProcess(PathBuilder pathBuilder, WebContext context, TemplateEngine engine,
                            Optional<User> loggedInUser, int genconYear) throws Exception {
     String requestURI = context.getHttpServletRequest().getRequestURI();
     List<String> splitUrl = Splitter.on("/").omitEmptyStrings().splitToList(requestURI);
@@ -64,7 +61,7 @@ public class NewCategoryDetailsController  extends ThymeleafController {
     engine.process("newCategoryDetails", context, context.getHttpServletResponse().getWriter());
   }
 
-  private String createEventListHtml(SchedulerApp.PathBuilder urls, List<GenconEventGroup> events) {
+  private String createEventListHtml(PathBuilder urls, List<GenconEventGroup> events) {
     StringBuilder html = new StringBuilder();
 
     log.info("Partitioning " + events.size() + " by rule system");
@@ -102,7 +99,7 @@ public class NewCategoryDetailsController  extends ThymeleafController {
     return htmlEscaper().escape(Strings.nullToEmpty(input));
   }
 
-  private void buildSearchResult(SchedulerApp.PathBuilder urls, StringBuilder html, GenconEventGroup event) {
+  private void buildSearchResult(PathBuilder urls, StringBuilder html, GenconEventGroup event) {
     html.append("<a href=\"")
         .append(urls.sitePath("event") + htmlEscaper().escape(event.getClusterId()))
         .append("\" ")

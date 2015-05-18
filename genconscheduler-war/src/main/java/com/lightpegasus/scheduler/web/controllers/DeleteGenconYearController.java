@@ -12,8 +12,8 @@ import com.lightpegasus.scheduler.gencon.entity.GenconCategory;
 import com.lightpegasus.scheduler.gencon.entity.GenconEvent;
 import com.lightpegasus.scheduler.gencon.entity.User;
 import com.lightpegasus.scheduler.web.RequestHelpers;
-import com.lightpegasus.scheduler.web.SchedulerApp;
 import com.lightpegasus.scheduler.web.ThymeleafController;
+import com.lightpegasus.scheduler.web.paths.PathBuilder;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.WebContext;
 
@@ -30,7 +30,7 @@ public class DeleteGenconYearController extends ThymeleafController {
   private static Logger logger = Logger.getLogger(DeleteGenconYearController.class.getSimpleName());
 
   @Override
-  public void doProcess(SchedulerApp.PathBuilder pathBuilder, WebContext context, TemplateEngine engine, Optional<User> loggedInUser,
+  public void doProcess(PathBuilder pathBuilder, WebContext context, TemplateEngine engine, Optional<User> loggedInUser,
                         int genconYear) throws Exception {
     int totalEventsDeleted = 0;
 

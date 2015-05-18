@@ -5,10 +5,17 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.googlecode.objectify.Objectify;
 import com.googlecode.objectify.ObjectifyService;
+import com.googlecode.objectify.impl.translate.opt.BigDecimalLongTranslatorFactory;
+import com.googlecode.objectify.impl.translate.opt.joda.JodaTimeTranslators;
+import com.lightpegasus.objectify.DurationLongValueTranslatorFactory;
 import com.lightpegasus.scheduler.gencon.entity.BackgroundTaskStatus;
 import com.lightpegasus.scheduler.gencon.entity.GenconCategory;
 import com.lightpegasus.scheduler.gencon.entity.GenconEvent;
 import com.lightpegasus.scheduler.gencon.entity.GenconEventGroup;
+import com.lightpegasus.scheduler.gencon.entity.SearchQuery;
+import com.lightpegasus.scheduler.gencon.entity.UpdateHistory;
+import com.lightpegasus.scheduler.gencon.entity.User;
+import com.lightpegasus.scheduler.web.SchedulerApp;
 
 import java.util.List;
 import java.util.logging.Logger;
@@ -19,6 +26,25 @@ import java.util.logging.Logger;
  */
 public class Queries {
   private static Logger log = Logger.getLogger(Queries.class.getSimpleName());
+
+  public static void initializeObjectify() {
+    // All translators need to be installed before the entities.
+    ObjectifyService.factory().getTranslators().add(new BigDecimalLongTranslatorFactory());
+    ObjectifyService.factory().getTranslators().add(
+        new DurationLongValueTranslatorFactory());
+    JodaTimeTranslators.add(ObjectifyService.factory());
+
+    // Now register entities.
+    ObjectifyService.register(GenconEvent.class);
+    ObjectifyService.register(GenconEventGroup.class);
+    ObjectifyService.register(GenconCategory.class);
+    ObjectifyService.register(SearchQuery.class);
+    ObjectifyService.register(BackgroundTaskStatus.class);
+    ObjectifyService.register(User.class);
+    ObjectifyService.register(UpdateHistory.class);
+
+    log.info("Registered entities");
+  }
 
   private Objectify ofy() {
     return ObjectifyService.ofy();
@@ -74,5 +100,20 @@ public class Queries {
         .filter("clusterHash", clusterHash)
         .first()
         .now();
+  }
+
+  public Optional<User> loadUser(String userId) {
+    return Optional.fromNullable(ofy().load().type(User.class).id(userId).now());
+  }
+
+  public User loadOrCreateUser(String userId, String email, String nickname) {
+    Optional<User> loadedUser = loadUser(userId);
+    if (loadedUser.isPresent()) {
+      return loadedUser.get();
+    } else {
+      User newUser = new User(userId, email, nickname);
+      ofy().save().entity(newUser).now();
+      return newUser;
+    }
   }
 }

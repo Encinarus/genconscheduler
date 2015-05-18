@@ -11,6 +11,7 @@ import com.googlecode.objectify.Ref;
 import com.googlecode.objectify.annotation.Cache;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
+import com.googlecode.objectify.annotation.Ignore;
 import com.googlecode.objectify.annotation.Index;
 import com.googlecode.objectify.annotation.Load;
 import com.googlecode.objectify.annotation.Stringify;
@@ -39,6 +40,8 @@ public class User {
   @Stringify(PreferenceStringifier.class)
   private Map<Preference, Boolean> preferences = new HashMap<>();
 
+  @Ignore private boolean isAdmin;
+
   public List<GenconEvent> getStarredEvents() {
     return ImmutableList.copyOf(Iterables.transform(starredEvents,
         new Function<Ref<GenconEvent>, GenconEvent>() {
@@ -56,6 +59,14 @@ public class User {
             return genconEvent.getYear() == year;
           }
         }).toList();
+  }
+
+  public boolean isAdmin() {
+    return isAdmin;
+  }
+
+  public void setAdmin(boolean isAdmin) {
+    this.isAdmin = isAdmin;
   }
 
   public enum Preference {

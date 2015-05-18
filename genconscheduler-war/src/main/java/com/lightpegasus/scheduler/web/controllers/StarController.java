@@ -7,8 +7,8 @@ import com.google.common.collect.Multimap;
 import com.lightpegasus.scheduler.gencon.entity.GenconEvent;
 import com.lightpegasus.scheduler.gencon.entity.User;
 import com.lightpegasus.scheduler.web.RequestHelpers;
-import com.lightpegasus.scheduler.web.SchedulerApp;
 import com.lightpegasus.scheduler.web.ThymeleafController;
+import com.lightpegasus.scheduler.web.paths.PathBuilder;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.WebContext;
 
@@ -25,7 +25,7 @@ import static com.googlecode.objectify.ObjectifyService.ofy;
  */
 public class StarController extends ThymeleafController {
   @Override
-  protected void doProcess(SchedulerApp.PathBuilder pathBuilder, WebContext context, TemplateEngine engine, Optional<User> loggedInUser,
+  protected void doProcess(PathBuilder pathBuilder, WebContext context, TemplateEngine engine, Optional<User> loggedInUser,
                            int genconYear) throws Exception {
     boolean isPost = context.getHttpServletRequest().getMethod().equals("POST");
 
