@@ -20,6 +20,8 @@ import com.lightpegasus.scheduler.web.SchedulerApp;
 import java.util.List;
 import java.util.logging.Logger;
 
+import static com.googlecode.objectify.ObjectifyService.ofy;
+
 
 /**
  * Static utility class for loading entities.
@@ -115,5 +117,12 @@ public class Queries {
       ofy().save().entity(newUser).now();
       return newUser;
     }
+  }
+
+  public List<GenconEventGroup> loadEventGroupsForCategory(String category, int genconYear) {
+    return ofy().load().type(GenconEventGroup.class)
+        .filter("eventTypeAbbreviation", category)
+        .filter("year", genconYear)
+        .list();
   }
 }

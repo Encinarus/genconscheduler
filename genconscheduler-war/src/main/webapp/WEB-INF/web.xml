@@ -22,6 +22,10 @@
     <servlet-name>categories</servlet-name>
     <jsp-file>/jsp/categories.jsp</jsp-file>
   </servlet>
+  <servlet>
+    <servlet-name>categoryDetails</servlet-name>
+    <jsp-file>/jsp/categoryDetails.jsp</jsp-file>
+  </servlet>
 
   <filter-mapping>
     <filter-name>ObjectifyFilter</filter-name>
@@ -38,6 +42,10 @@
   </filter-mapping>
   <servlet-mapping>
     <servlet-name>categories</servlet-name>
-    <url-pattern>/2015/categories2</url-pattern>
+    <url-pattern>/2015/categories/*</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>categoryDetails</servlet-name>
+    <url-pattern>/2015/category/*</url-pattern>
   </servlet-mapping>
 </web-app>

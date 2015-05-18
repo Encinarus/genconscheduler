@@ -3,12 +3,10 @@ package com.lightpegasus.scheduler.web;
 import com.google.common.collect.ImmutableMap;
 import com.lightpegasus.scheduler.gencon.Queries;
 import com.lightpegasus.scheduler.web.controllers.AdvancedSearchController;
-import com.lightpegasus.scheduler.web.controllers.CategoryDetailsController;
-import com.lightpegasus.scheduler.web.controllers.CategoryListController;
 import com.lightpegasus.scheduler.web.controllers.DeleteGenconYearController;
 import com.lightpegasus.scheduler.web.controllers.EventDetailsController;
 import com.lightpegasus.scheduler.web.controllers.EventParserController;
-import com.lightpegasus.scheduler.web.controllers.NewCategoryDetailsController;
+import com.lightpegasus.scheduler.web.controllers.RedirectController;
 import com.lightpegasus.scheduler.web.controllers.SearchController;
 import com.lightpegasus.scheduler.web.controllers.StarController;
 import com.lightpegasus.scheduler.web.controllers.StaticTemplateController;
@@ -56,10 +54,7 @@ public class SchedulerApp {
   private static void initializeThymeleafEngine() {
     // Setup the controllers to dispatch requests to the appropriate controller.
     controllers = ImmutableMap.<String, ThymeleafController>builder()
-        .put("categories", new CategoryListController())
         .put("event", new EventDetailsController())
-        .put("oldCategory", new CategoryDetailsController())
-        .put("category", new NewCategoryDetailsController())
         .put("about", new StaticTemplateController("about"))
         .put("search", new SearchController())
         .put("advancedSearch", new AdvancedSearchController())
@@ -70,7 +65,7 @@ public class SchedulerApp {
         // routes on it's own
         .put("deleteEvents", new DeleteGenconYearController())
         .put("parseEvents", new EventParserController())
-        .put("", new CategoryListController())
+        .put("", new RedirectController("categories"))
         .build();
 
     // Now setup the template engine

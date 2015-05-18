@@ -3,11 +3,7 @@
 <%@ page import="com.lightpegasus.scheduler.web.RequestContext" %>
 <%@ page import="com.lightpegasus.scheduler.web.paths.PathBuilder" %>
 <%@ page import="com.google.common.collect.Iterables" %>
-<%@ page import="com.google.appengine.api.users.User" %>
-<%@ page import="com.google.appengine.api.users.UserService" %>
-<%@ page import="com.google.appengine.api.users.UserServiceFactory" %>
 <%@ page import="java.util.List" %>
-<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <html>
 <head>
