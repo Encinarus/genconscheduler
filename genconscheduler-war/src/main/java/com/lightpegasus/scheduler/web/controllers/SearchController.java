@@ -47,11 +47,14 @@ public class SearchController extends ThymeleafController {
     IndexSpec indexSpec = IndexSpec.newBuilder().setName("events").build();
     Index index = SearchServiceFactory.getSearchService().getIndex(indexSpec);
 
-    String sanitizedQuery = "\"" + new CharEscaperBuilder()
+    String sanitizedQuery = new CharEscaperBuilder()
         .addEscape('"', "")
         .addEscape('\'', "")
+        .addEscape(',', "")
+        .addEscape(':', "")
+        .addEscape('.', "")
         .toEscaper()
-        .escape(query) + "\"";
+        .escape(query);
     QueryOptions options = QueryOptions.newBuilder()
         .setLimit(1000)
         .setReturningIdsOnly(true)
