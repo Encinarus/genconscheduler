@@ -159,27 +159,27 @@
   $('#daygroup a[href="#wednesday"]').click(function(e) {
     e.preventDefault();
 
-    $('#calendar').fullCalendar( 'gotoDate', 2015, 6, 29 );
+    $('#calendar').fullCalendar( 'gotoDate', 2016, 7, 3 );
   });
 
   $('#daygroup a[href="#thursday"]').click(function(e) {
     e.preventDefault();
-    $('#calendar').fullCalendar( 'gotoDate', 2015, 6, 30 );
+    $('#calendar').fullCalendar( 'gotoDate', 2016, 7, 4 );
   });
 
   $('#daygroup a[href="#friday"]').click(function(e) {
     e.preventDefault();
-    $('#calendar').fullCalendar( 'gotoDate', 2015, 6, 31 );
+    $('#calendar').fullCalendar( 'gotoDate', 2016, 7, 5 );
   });
 
   $('#daygroup a[href="#saturday"]').click(function(e) {
     e.preventDefault();
-    $('#calendar').fullCalendar( 'gotoDate', 2015, 7, 1 );
+    $('#calendar').fullCalendar( 'gotoDate', 2016, 7, 6 );
   });
 
   $('#daygroup a[href="#sunday"]').click(function(e) {
     e.preventDefault();
-    $('#calendar').fullCalendar( 'gotoDate', 2015, 7, 2 );
+    $('#calendar').fullCalendar( 'gotoDate', 2016, 7, 7 );
   });
 
   $(document).ready(function() {
@@ -193,7 +193,7 @@
         title: group.title,
         start: group.startTimeSeconds,
         end: group.endTimeSeconds,
-        url: group.genconUrl,
+        url: group.plannerUrl,
         className: ['cal' + group.shortCat, 'calevent']
       });
     }
@@ -209,9 +209,9 @@
       editable: false,
       hiddenDays: [1, 2],
       eventClick: function(event) {
-        if (event.url) {
+        if (event.plannerUrl) {
           // open in new tab
-          window.open(event.url);
+          window.open(event.plannerUrl);
           return false;
         }
       },
@@ -220,7 +220,7 @@
     });
 
     $('#calendar').fullCalendar('changeView', 'agendaWeek' );
-    $('#calendar').fullCalendar('gotoDate', 2015, 6, 29 );
+    $('#calendar').fullCalendar('gotoDate', 2016, 7, 4 );
     $('#calendar').fullCalendar('render');
   });
 

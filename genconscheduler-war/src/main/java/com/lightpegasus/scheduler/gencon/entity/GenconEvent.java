@@ -101,10 +101,14 @@ public class GenconEvent {
   }
 
   public String getGenconUrl() {
-    if (year == 2014 || year == 2015) {
+    if (year >= 2014) {
       return "http://gencon.com/events/" + gameId.substring(eventTypeAbbreviation.length() + 2);
     }
     return "#";
+  }
+
+  public String getPlannerUrl() {
+    return "http://www.genconplanner.com/" + year + "/event/" + gameId;
   }
 
   public String getGroup() {

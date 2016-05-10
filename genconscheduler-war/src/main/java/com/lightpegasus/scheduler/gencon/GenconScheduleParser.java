@@ -26,9 +26,10 @@ public class GenconScheduleParser implements Closeable {
         break;
       case 2014:
       case 2015:
+      case 2016:
+      default:
         this.eventConverter = new GenconConverterV2(year, input, callback);
         break;
-      default: throw new IllegalArgumentException("Unable to build a converter for " + year);
     }
   }
 

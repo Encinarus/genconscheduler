@@ -44,7 +44,7 @@
   <h1 class="page-header">Category Listing <small><%= category %></small></h1>
   <% if ("BGM".equals(category)) { %>
   <div class="well well-sm">See BGG's list of
-    <a href="https://boardgamegeek.com/geeklist/190570/gen-con-2015-releases/page/1">GenCon 2015 releases</a>
+    <a href="https://boardgamegeek.com/geeklist/204632/my-gencon-2016-releases-watch">GenCon 2016 releases</a>
   </div>
   <% } %>
 

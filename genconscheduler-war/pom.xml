@@ -16,7 +16,7 @@
 
   <properties>
     <appengine.app.version>2-war</appengine.app.version>
-    <appengine.target.version>1.9.19</appengine.target.version>
+    <appengine.target.version>1.9.37</appengine.target.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 

@@ -38,7 +38,7 @@ public class UserStarredController extends ThymeleafController {
 
     context.setVariable("eventsByDay", EventFilters.eventsByDay(starredEvents));
     context.setVariable("eventsByCategory", EventFilters.eventsByCategory(starredEvents));
-    context.setVariable("calendarEvents", partitionEventsForCalendar(starredEvents));
+    context.setVariable("calendarEvents", partitionEventsForCalendar(starredEvents, pathBuilder));
 
     engine.process("starredList", context, context.getHttpServletResponse().getWriter());
   }
@@ -59,10 +59,11 @@ public class UserStarredController extends ThymeleafController {
     public final int endTimeSeconds;
     public final List<String> eventIds;
     public final String genconUrl;
+    public final String plannerUrl;
     public final String shortCat;
 
     // Passed in events are assumed to overlap in time.
-    public CalendarEvent(List<GenconEvent> events) {
+    public CalendarEvent(List<GenconEvent> events, PathBuilder paths) {
       // get instead of getFirst because getFirst returns a nullable, which leads to a warning
       GenconEvent firstEvent = Iterables.get(events, 0);
       this.title = firstEvent.getTitle() +
@@ -92,11 +93,13 @@ public class UserStarredController extends ThymeleafController {
         dayParam = "sun=true";
       }
 
-        this.genconUrl = "https://gencon.com/events/search?utf8=✓"
+      this.genconUrl = "https://gencon.com/events/search?utf8=✓"
           // The gencon search doesn't like the !, so we remove it...
           + "&event_type=" + escaper.escape(firstEvent.getEventType().replace("!", ""))
           + "&title=" + escaper.escape(firstEvent.getTitle())
           + "&" + dayParam;
+
+      this.plannerUrl = firstEvent.getPlannerUrl();
     }
 
     public String getTitle() {
@@ -123,8 +126,13 @@ public class UserStarredController extends ThymeleafController {
       return shortCat;
     }
 
+    public String getPlannerUrl() {
+      return plannerUrl;
+    }
+
     public String toString() {
       return Objects.toStringHelper(this)
+          .add("plannerUrl", plannerUrl)
           .add("title", title)
           .add("startSeconds", startTimeSeconds)
           .add("endSeconds", endTimeSeconds)
@@ -134,7 +142,8 @@ public class UserStarredController extends ThymeleafController {
     }
   }
 
-  public List<CalendarEvent> partitionEventsForCalendar(Collection<GenconEvent> eventsToCluster) {
+  public List<CalendarEvent> partitionEventsForCalendar(Collection<GenconEvent> eventsToCluster,
+                                                        PathBuilder paths) {
     // First, cluster by hash, skipping any which have been canceled
     Multimap<Long, GenconEvent> hashClusteredEvents = HashMultimap.create();
 
@@ -177,14 +186,14 @@ public class UserStarredController extends ThymeleafController {
           }
         } else {
           // New interval time!
-          calendarEvents.add(new CalendarEvent(timeCluster));
+          calendarEvents.add(new CalendarEvent(timeCluster, paths));
           timeCluster = Lists.newArrayList(event);
           clusterInterval = new Interval(event.getStartTime(), event.getEndTime());
         }
       }
 
       if (clusterInterval != null) {
-        calendarEvents.add(new CalendarEvent(timeCluster));
+        calendarEvents.add(new CalendarEvent(timeCluster, paths));
       }
     }
 

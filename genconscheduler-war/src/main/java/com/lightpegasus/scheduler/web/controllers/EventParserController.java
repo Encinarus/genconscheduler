@@ -343,12 +343,34 @@ public class EventParserController extends ThymeleafController {
     } else if (year == 2014 && parseVersion == ParseVersion.V2) {
       return new FileInputStream(basePath + "events.may.13.2014.xlsx");
     } else if (year == 2014 && parseVersion == ParseVersion.LIVE) {
-      //String genconUrl = "http://community.gencon.com/files/folders/345723/download.aspx";
       return parseLive2014();
     } else if (year == 2015) {
       return parseLive2015();
+    } else if (year == 2016) {
+      return parseLive2016();
     } else {
       throw new UnsupportedOperationException("Year not supported: " + year);
+    }
+  }
+
+  private InputStream parseLive2016()  throws IOException {
+    String genconUrl = "http://www.gencon.com/downloads/events.zip";
+    HttpGet httpGet = new HttpGet(genconUrl);
+
+    log.info("Requesting excel file from " + genconUrl);
+    try (CloseableHttpClient httpClient = HttpClients.createDefault();
+         CloseableHttpResponse response = httpClient.execute(httpGet)) {
+      int statusCode = response.getStatusLine().getStatusCode();
+      log.info("Got status: " + statusCode);
+
+      HttpEntity entity = response.getEntity();
+      ZipInputStream compressedInput = new ZipInputStream(entity.getContent());
+      // Only 1 entry in the archive, but we need to advance the stream to that point
+      compressedInput.getNextEntry();
+
+      byte[] excelBytes = ByteStreams.toByteArray(compressedInput);
+
+      return new ByteArrayInputStream(excelBytes);
     }
   }
 
@@ -399,6 +421,7 @@ public class EventParserController extends ThymeleafController {
         .addField(textField("gameSystem", parsedEvent.getGameSystem()))
         .addField(textField("longDescription", parsedEvent.getRulesEdition()))
         .addField(textField("day", dayOfWeekToText(parsedEvent.getDayOfWeek())))
+        .addField(textField("group", parsedEvent.getGroup()))
         .addField(Field.newBuilder().setName("year").setNumber(parsedEvent.getYear()))
         .addField(Field.newBuilder()
             .setName("duration")

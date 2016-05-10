@@ -8,6 +8,7 @@ import com.google.appengine.api.search.Results;
 import com.google.appengine.api.search.ScoredDocument;
 import com.google.appengine.api.search.SearchServiceFactory;
 import com.google.common.base.Optional;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
@@ -42,40 +43,42 @@ public class SearchController extends ThymeleafController {
     Multimap<String, String> parameters =
         RequestHelpers.parameterMultimap(context.getHttpServletRequest());
 
-    String query = Iterables.getFirst(parameters.get("q"), null);
-
-    IndexSpec indexSpec = IndexSpec.newBuilder().setName("events").build();
-    Index index = SearchServiceFactory.getSearchService().getIndex(indexSpec);
-
-    String sanitizedQuery = new CharEscaperBuilder()
-        .addEscape('"', "")
-        .addEscape('\'', "")
-        .addEscape(',', "")
-        .addEscape(':', "")
-        .addEscape('.', "")
-        .toEscaper()
-        .escape(query);
-    QueryOptions options = QueryOptions.newBuilder()
-        .setLimit(1000)
-        .setReturningIdsOnly(true)
-        .setNumberFoundAccuracy(10000)
-        .build();
-    Results<ScoredDocument> documents = index.search(Query.newBuilder()
-        .setOptions(options)
-        .build(sanitizedQuery + " year:" + genconYear));
-
+    String query = Iterables.getFirst(parameters.get("q"), "");
     Collection<GenconEvent> foundEvents = ImmutableList.of();
 
-    if (documents.getNumberFound() > 0) {
-      // Convert the documents to events
-      Set<String> foundIds = new HashSet<>();
-      for (ScoredDocument doc : documents.getResults()) {
-        foundIds.add(doc.getId());
+    if (!Strings.isNullOrEmpty(query)) {
+
+      IndexSpec indexSpec = IndexSpec.newBuilder().setName("events").build();
+      Index index = SearchServiceFactory.getSearchService().getIndex(indexSpec);
+
+      String sanitizedQuery = new CharEscaperBuilder()
+          .addEscape('"', "")
+          .addEscape('\'', "")
+          .addEscape(',', "")
+          .addEscape(':', "")
+          .addEscape('.', "")
+          .toEscaper()
+          .escape(query);
+      QueryOptions options = QueryOptions.newBuilder()
+          .setLimit(1000)
+          .setReturningIdsOnly(true)
+          .setNumberFoundAccuracy(10000)
+          .build();
+      Results<ScoredDocument> documents = index.search(Query.newBuilder()
+          .setOptions(options)
+          .build(sanitizedQuery + " year:" + genconYear));
+
+
+      if (documents.getNumberFound() > 0) {
+        // Convert the documents to events
+        Set<String> foundIds = new HashSet<>();
+        for (ScoredDocument doc : documents.getResults()) {
+          foundIds.add(doc.getId());
+        }
+
+        foundEvents = ofy().load().type(GenconEvent.class).ids(foundIds).values();
       }
-
-      foundEvents = ofy().load().type(GenconEvent.class).ids(foundIds).values();
     }
-
     List<SearchResult> results = composeSearchResults(foundEvents);
 
     // Save the search query and the result count for later inspection
