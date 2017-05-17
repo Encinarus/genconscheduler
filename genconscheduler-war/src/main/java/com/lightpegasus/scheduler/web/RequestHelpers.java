@@ -1,6 +1,7 @@
 package com.lightpegasus.scheduler.web;
 
 import com.google.common.base.Joiner;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
@@ -27,7 +28,7 @@ public class RequestHelpers {
         "RequestUrl:", req.getRequestURL(),
         "QueryString:", req.getQueryString(),
         "Cookies:", Joiner.on(", ").join(cookieDebugStrings),
-        "HeaderNames:", Objects.toStringHelper("Headers")
+        "HeaderNames:", MoreObjects.toStringHelper("Headers")
             .addValue(ImmutableList.copyOf(Iterators.forEnumeration(req.getHeaderNames()))),
         "PathInfo:", req.getPathInfo(),
         "Method:", req.getMethod(),
@@ -36,7 +37,7 @@ public class RequestHelpers {
   }
 
   public static String cookieDebugString(Cookie cookie) {
-    return Objects.toStringHelper(cookie)
+    return MoreObjects.toStringHelper(cookie)
         .add("name", cookie.getName())
         .add("domain", cookie.getDomain())
         .add("maxAge", cookie.getMaxAge())

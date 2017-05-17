@@ -1,6 +1,7 @@
 package com.lightpegasus.scheduler.gencon.entity;
 
 import com.google.common.base.Joiner;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
@@ -414,7 +415,7 @@ public class GenconEvent {
   }
 
   public void updateHash() {
-    this.clusterHash = Objects.toStringHelper(this)
+    this.clusterHash = MoreObjects.toStringHelper(this)
         .add("group", scrub(group))
         .add("title", scrub(title))
         .add("shortDescription", scrub(shortDescription))
@@ -445,7 +446,7 @@ public class GenconEvent {
 
   @Override
   public String toString() {
-    return Objects.toStringHelper(this)
+    return MoreObjects.toStringHelper(this)
         .add("group", group)
         .add("title", title)
         .add("clusterHash", clusterHash)

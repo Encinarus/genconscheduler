@@ -11,6 +11,7 @@
   <link type="text/css" rel="stylesheet" href="/static/stylesheets/main.css"/>
   <title>Gencon Event Categories</title>
   <meta name="google-site-verification" content="a_VPdSYEO-t_BvYNh_sIhTYu76b12ltFT7kCOl-ujzE" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
 </head>
 
 

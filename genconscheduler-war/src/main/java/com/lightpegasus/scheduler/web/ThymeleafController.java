@@ -2,6 +2,7 @@ package com.lightpegasus.scheduler.web;
 
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableCollection;
@@ -172,43 +173,43 @@ public abstract class ThymeleafController {
     }
 
     public int getWedAvailable() {
-      return Objects.firstNonNull(availableByDay.get("Wednesday"), 0);
+      return MoreObjects.firstNonNull(availableByDay.get("Wednesday"), 0);
     }
 
     public int getThursAvailable() {
-      return Objects.firstNonNull(availableByDay.get("Thursday"), 0);
+      return MoreObjects.firstNonNull(availableByDay.get("Thursday"), 0);
     }
 
     public int getFriAvailable() {
-      return Objects.firstNonNull(availableByDay.get("Friday"), 0);
+      return MoreObjects.firstNonNull(availableByDay.get("Friday"), 0);
     }
 
     public int getSatAvailable() {
-      return Objects.firstNonNull(availableByDay.get("Saturday"), 0);
+      return MoreObjects.firstNonNull(availableByDay.get("Saturday"), 0);
     }
 
     public int getSunAvailable() {
-      return Objects.firstNonNull(availableByDay.get("Sunday"), 0);
+      return MoreObjects.firstNonNull(availableByDay.get("Sunday"), 0);
     }
 
     public int getWedOpenEvents() {
-      return Objects.firstNonNull(openEventCounts.get("Wednesday"), 0);
+      return MoreObjects.firstNonNull(openEventCounts.get("Wednesday"), 0);
     }
 
     public int getThursOpenEvents() {
-      return Objects.firstNonNull(openEventCounts.get("Thursday"), 0);
+      return MoreObjects.firstNonNull(openEventCounts.get("Thursday"), 0);
     }
 
     public int getFriOpenEvents() {
-      return Objects.firstNonNull(openEventCounts.get("Friday"), 0);
+      return MoreObjects.firstNonNull(openEventCounts.get("Friday"), 0);
     }
 
     public int getSatOpenEvents() {
-      return Objects.firstNonNull(openEventCounts.get("Saturday"), 0);
+      return MoreObjects.firstNonNull(openEventCounts.get("Saturday"), 0);
     }
 
     public int getSunOpenEvents() {
-      return Objects.firstNonNull(openEventCounts.get("Sunday"), 0);
+      return MoreObjects.firstNonNull(openEventCounts.get("Sunday"), 0);
     }
   }
 }

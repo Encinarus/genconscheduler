@@ -1,6 +1,7 @@
 package com.lightpegasus.scheduler.web.controllers;
 
 import com.google.common.base.Joiner;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import com.google.common.collect.HashMultimap;
@@ -131,7 +132,7 @@ public class UserStarredController extends ThymeleafController {
     }
 
     public String toString() {
-      return Objects.toStringHelper(this)
+      return MoreObjects.toStringHelper(this)
           .add("plannerUrl", plannerUrl)
           .add("title", title)
           .add("startSeconds", startTimeSeconds)

@@ -16,7 +16,7 @@
 
   <properties>
     <appengine.app.version>2-war</appengine.app.version>
-    <appengine.target.version>1.9.37</appengine.target.version>
+    <appengine.target.version>1.9.52</appengine.target.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
@@ -30,8 +30,9 @@
 
     <dependency>
       <groupId>javax.servlet</groupId>
-      <artifactId>servlet-api</artifactId>
-      <version>2.5</version>
+      <artifactId>javax.servlet-api</artifactId>
+      <version>3.1.0</version>
+      <type>jar</type>
       <scope>provided</scope>
     </dependency>
 
@@ -44,7 +45,7 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>18.0</version>
+      <version>20.0</version>
     </dependency>
 
     <dependency>
@@ -56,49 +57,49 @@
     <dependency>
       <groupId>joda-time</groupId>
       <artifactId>joda-time</artifactId>
-      <version>2.5</version>
+      <version>2.9.9</version>
     </dependency>
 
     <dependency>
       <groupId>com.googlecode.objectify</groupId>
       <artifactId>objectify</artifactId>
-      <version>5.0.1</version>
+      <version>5.1.17</version>
     </dependency>
 
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
-      <version>3.0</version>
+      <version>3.5</version>
     </dependency>
 
     <dependency>
       <groupId>org.thymeleaf</groupId>
       <artifactId>thymeleaf</artifactId>
-      <version>2.1.2.RELEASE</version>
+      <version>2.1.5.RELEASE</version>
     </dependency>
 
     <dependency>
       <groupId>org.apache.poi</groupId>
       <artifactId>poi</artifactId>
-      <version>3.10-FINAL</version>
+      <version>3.16</version>
     </dependency>
 
     <dependency>
       <groupId>org.apache.poi</groupId>
       <artifactId>poi-ooxml</artifactId>
-      <version>3.10-FINAL</version>
+      <version>3.16</version>
     </dependency>
 
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>
-      <version>4.3.3</version>
+      <version>4.5.3</version>
     </dependency>
 
     <dependency>
       <groupId>xerces</groupId>
-      <artifactId>xerces</artifactId>
-      <version>2.4.0</version>
+      <artifactId>xercesImpl</artifactId>
+      <version>2.11.0</version>
     </dependency>
 
     <!-- Test Dependencies -->
@@ -128,6 +129,11 @@
     <outputDirectory>target/${project.artifactId}-${project.version}/WEB-INF/classes</outputDirectory>
 
     <plugins>
+      <plugin>
+        <groupId>com.google.appengine</groupId>
+        <artifactId>gcloud-maven-plugin</artifactId>
+        <version>2.0.9.120.v20160803</version>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>

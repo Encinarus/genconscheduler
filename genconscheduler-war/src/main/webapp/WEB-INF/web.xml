@@ -48,4 +48,16 @@
     <servlet-name>categoryDetails</servlet-name>
     <url-pattern>/2016/category/*</url-pattern>
   </servlet-mapping>
+  <filter-mapping>
+    <filter-name>ServletFilter</filter-name>
+    <url-pattern>/2017/*</url-pattern>
+  </filter-mapping>
+  <servlet-mapping>
+    <servlet-name>categories</servlet-name>
+    <url-pattern>/2017/categories/*</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>categoryDetails</servlet-name>
+    <url-pattern>/2017/category/*</url-pattern>
+  </servlet-mapping>
 </web-app>

@@ -1,5 +1,6 @@
 package com.lightpegasus.scheduler.gencon.entity;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -93,7 +94,7 @@ public class GenconCategory {
 
   @Override
   public String toString() {
-    return Objects.toStringHelper(this)
+    return MoreObjects.toStringHelper(this)
         .add("categoryName", categoryName)
         .add("gameSystems", gameSystems)
         .add("eventCount", eventCount)

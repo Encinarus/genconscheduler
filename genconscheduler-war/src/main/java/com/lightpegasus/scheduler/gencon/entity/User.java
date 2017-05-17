@@ -5,7 +5,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.googlecode.objectify.Ref;
 import com.googlecode.objectify.annotation.Cache;
@@ -17,7 +16,6 @@ import com.googlecode.objectify.annotation.Load;
 import com.googlecode.objectify.annotation.Stringify;
 import com.googlecode.objectify.stringifier.Stringifier;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
