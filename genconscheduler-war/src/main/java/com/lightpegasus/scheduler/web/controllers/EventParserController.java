@@ -350,8 +350,34 @@ public class EventParserController extends ThymeleafController {
       return parseLive2016();
     } else if (year == 2017) {
       return parseLive2017();
+    } else if (year == 2018) {
+      return parseLive2018();
     } else {
       throw new UnsupportedOperationException("Year not supported: " + year);
+    }
+  }
+
+  private InputStream parseLive2018()  throws IOException {
+    String genconUrl = "https://www.gencon.com/downloads/events.zip";
+    HttpGet httpGet = new HttpGet(genconUrl);
+
+    System.setProperty("javax.net.debug", "all");
+    System.setProperty("https.protocols", "TLSv1.2");
+
+    log.info("Requesting excel file from " + genconUrl);
+    try (CloseableHttpClient httpClient = HttpClients.createDefault();
+         CloseableHttpResponse response = httpClient.execute(httpGet)) {
+      int statusCode = response.getStatusLine().getStatusCode();
+      log.info("Got status: " + statusCode);
+
+      HttpEntity entity = response.getEntity();
+      ZipInputStream compressedInput = new ZipInputStream(entity.getContent());
+      // Only 1 entry in the archive, but we need to advance the stream to that point
+      compressedInput.getNextEntry();
+
+      byte[] excelBytes = ByteStreams.toByteArray(compressedInput);
+
+      return new ByteArrayInputStream(excelBytes);
     }
   }
 

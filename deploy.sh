@@ -10,4 +10,4 @@
 # the local machine and the ear always looks there, instead of looking for the
 # local artfact of the war. Without the install, the ear will use stale versions
 # of the war. WAT!
-mvn clean compile install && mvn -pl genconscheduler-ear appengine:update
+mvn clean compile install && mvn -pl genconscheduler-ear appengine:update -Djava8=true

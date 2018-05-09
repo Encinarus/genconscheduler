@@ -6,37 +6,39 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
 
   <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css"/>
-  <link type="text/css" rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/fullcalendar/1.6.4/fullcalendar.css"/>
-  <link type="text/css" rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/fullcalendar/1.6.4/fullcalendar.print.css"/>
+  <link type="text/css" rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.9.0/fullcalendar.css"/>
+  <link type="text/css" rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.9.0/fullcalendar.print.css" media="print"/>
   <link type="text/css" rel="stylesheet" href="/static/stylesheets/main.css"/>
 
   <title>Starred Events</title>
 
   <style>
-    a.calevent div.fc-event-inner{
+    .calevent {
       color: #FFFFFF;
     }
 
-    a.calANI div.fc-event-inner{background-color: #A9177E;}
-    a.calBGM div.fc-event-inner{background-color: #0073AA;}
-    a.calCGM div.fc-event-inner{background-color: #6B2355;}
-    a.calEGM div.fc-event-inner{background-color: #858E95;}
-    a.calENT div.fc-event-inner{background-color: #C94088;}
-    a.calFLM div.fc-event-inner{background-color: #4B4761;}
-    a.calHMN div.fc-event-inner{background-color: #2A3181;}
-    a.calKID div.fc-event-inner{background-color: #9470AA;}
-    a.calLRP div.fc-event-inner{background-color: #AE8B1C;}
-    a.calMHE div.fc-event-inner{background-color: #E8B51C;}
-    a.calNMN div.fc-event-inner{background-color: #686F1F;}
-    a.calRPG div.fc-event-inner{background-color: #448A80;}
-    a.calRPGA div.fc-event-inner{background-color: #D67917;}
-    a.calSEM div.fc-event-inner{background-color: #009CDF;}
-    a.calSPA div.fc-event-inner{background-color: #A6C749;}
-    a.calTCG div.fc-event-inner{background-color: #1C944A;}
-    a.calTDA div.fc-event-inner{background-color: #771F17;}
-    a.calTRD div.fc-event-inner{background-color: #878F68;}
-    a.calWKS div.fc-event-inner{background-color: #5E3C03;}
-    a.calZED div.fc-event-inner{background-color: #75B9B8;}
+    a.calANI, tr.calANI {background-color: #A9177E;}
+    a.calBGM, tr.calBGM {background-color: #0073AA;}
+    a.calCGM, tr.calCGM {background-color: #6B2355;}
+    a.calEGM, tr.calEGM {background-color: #858E95;}
+    a.calENT, tr.calENT {background-color: #C94088;}
+    a.calFLM, tr.calFLM {background-color: #4B4761;}
+    a.calHMN, tr.calHMN {background-color: #2A3181;}
+    a.calKID, tr.calKID {background-color: #9470AA;}
+    a.calLRP, tr.calLRP {background-color: #AE8B1C;}
+    a.calMHE, tr.calMHE {background-color: #E8B51C;}
+    a.calNMN, tr.calNMN {background-color: #686F1F;}
+    a.calRPG, tr.calRPG {background-color: #448A80;}
+    a.calRPGA, tr.calRPGA {background-color: #D67917;}
+    a.calSEM, tr.calSEM {background-color: #009CDF;}
+    a.calSPA, tr.calSPA {background-color: #A6C749;}
+    a.calTCG, tr.calTCG {background-color: #1C944A;}
+    a.calTDA, tr.calTDA {background-color: #771F17;}
+    a.calTRD, tr.calTRD {background-color: #878F68;}
+    a.calWKS, tr.calWKS {background-color: #5E3C03;}
+    a.calZED, tr.calZED {background-color: #75B9B8;}
+
+    #eventContent { display: none; }
   </style>
   
 
@@ -52,7 +54,7 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="#">Gen Con 2013 Scheduler</a>
+      <a class="navbar-brand" href="#">Gen Con 2018 Scheduler</a>
     </div>
     <div class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
@@ -75,10 +77,21 @@
         <li class="active"><a href="#calendar-tab" data-toggle="tab">Calendar</a></li>
         <li><a href="#day-tab" data-toggle="tab">By day</a></li>
         <li><a href="#type-tab" data-toggle="tab">By type</a></li>
+        <li><a href="#replace-tab" data-toggle="tab">Bulk replace starred</a></li>
       </ul>
 
       <!-- Tab panes -->
       <div class="tab-content">
+        <div class="tab-pane" id="replace-tab">
+          <h3>Replace your starred events</h3>
+          <p>Click your user's tab from gencon.com and copy/paste the "My Schedule" section into this text box.</p>
+          <form method="post" th:action="@{${urls.sitePath('starred')}}">
+            <textarea rows="25" cols="100" name="schedule">
+            Drop your events here -- when you hit submit, your starred list will be replaced by events in here (even if there are none).
+            </textarea>
+           <input type="submit" value="Submit"/>
+          </form>
+        </div>
         <div class="tab-pane" id="day-tab">
           <div th:each="day : ${eventsByDay.keySet()}">
             <h3 th:text="${day}">Wednesday</h3>
@@ -135,10 +148,18 @@
   </div>
 </div>
 
+<div id="eventContent" title="Event Details">
+  <div id="eventInfo"></div>
+  <p><strong><a id="genconLink" target="_blank">GenCon</a></strong></p>
+  <p><strong><a id="plannerLink" target="_blank">Planner Page</a></strong></p>
+</div>
+
 <div th:replace="core :: pagefooter">I did this!</div>
-<script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.1/moment.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.16/moment-timezone-with-data-2012-2022.min.js"></script>
 <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/fullcalendar/1.6.4/fullcalendar.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.9.0/fullcalendar.min.js"></script>
 
 <script th:inline="javascript">
 /*<![CDATA[*/
@@ -161,27 +182,27 @@
   $('#daygroup a[href="#wednesday"]').click(function(e) {
     e.preventDefault();
 
-    $('#calendar').fullCalendar( 'gotoDate', 2016, 7, 3 );
+    $('#calendar').fullCalendar( 'gotoDate', "2018-08-01");
   });
 
   $('#daygroup a[href="#thursday"]').click(function(e) {
     e.preventDefault();
-    $('#calendar').fullCalendar( 'gotoDate', 2016, 7, 4 );
+    $('#calendar').fullCalendar( 'gotoDate', "2018-08-02");
   });
 
   $('#daygroup a[href="#friday"]').click(function(e) {
     e.preventDefault();
-    $('#calendar').fullCalendar( 'gotoDate', 2016, 7, 5 );
+    $('#calendar').fullCalendar( 'gotoDate', "2018-08-03");
   });
 
   $('#daygroup a[href="#saturday"]').click(function(e) {
     e.preventDefault();
-    $('#calendar').fullCalendar( 'gotoDate', 2016, 7, 6 );
+    $('#calendar').fullCalendar( 'gotoDate', "2018-08-04");
   });
 
   $('#daygroup a[href="#sunday"]').click(function(e) {
     e.preventDefault();
-    $('#calendar').fullCalendar( 'gotoDate', 2016, 7, 7 );
+    $('#calendar').fullCalendar( 'gotoDate', "2018-08-05");
   });
 
   $(document).ready(function() {
@@ -193,21 +214,36 @@
       group = groupedEvents[i];
       events.push({
         title: group.title,
-        start: group.startTimeSeconds,
-        end: group.endTimeSeconds,
+        start: moment.unix(group.startTimeSeconds).tz('America/New_York'),
+        end: moment.unix(group.endTimeSeconds).tz('America/New_York'),
         url: group.plannerUrl,
-        className: ['cal' + group.shortCat, 'calevent']
+        className: ['cal' + group.shortCat, 'calevent'],
+        location: group.location,
       });
     }
 
     $('#calendar').fullCalendar({
       header: {
-				left: '',
-				center: 'title',
-				right: 'agendaWeek,agendaDay'
-			},
-			firstDay: 3,
-      defaultView: 'agendaDay',
+        left: 'prev,next',
+        center: 'title',
+        right: 'agendaWeek,agendaDay,listWeek'
+      },
+      views: {
+        agendaWeek: {
+          buttonText: 'Week'
+        },
+        agendaDay: {
+          buttonText: 'Day'
+        },
+        listWeek: {
+          buttonText: 'Agenda View'
+        }
+      },
+      firstDay: 3,
+      defaultDate: '2018-08-02',
+      navLinks: false,
+      timezone: 'America/New_York',
+      defaultView: 'agendaWeek',
       editable: false,
       hiddenDays: [1, 2],
       eventClick: function(event) {
@@ -218,14 +254,9 @@
         }
       },
       allDayDefault: false,
-      events: events,
+      events: events
     });
-
-    $('#calendar').fullCalendar('changeView', 'agendaWeek' );
-    $('#calendar').fullCalendar('gotoDate', 2016, 7, 4 );
-    $('#calendar').fullCalendar('render');
   });
-
 
 /*]]>*/
 </script>

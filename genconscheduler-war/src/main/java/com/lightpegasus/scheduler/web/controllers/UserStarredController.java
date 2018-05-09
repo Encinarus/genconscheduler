@@ -11,9 +11,11 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.escape.Escaper;
 import com.google.common.net.UrlEscapers;
+import com.lightpegasus.scheduler.gencon.entity.GenconCategory;
 import com.lightpegasus.scheduler.gencon.entity.GenconEvent;
 import com.lightpegasus.scheduler.gencon.entity.User;
 import com.lightpegasus.scheduler.web.EventFilters;
+import com.lightpegasus.scheduler.web.RequestHelpers;
 import com.lightpegasus.scheduler.web.ThymeleafController;
 import com.lightpegasus.scheduler.web.paths.PathBuilder;
 import org.joda.time.DateTimeConstants;
@@ -21,11 +23,13 @@ import org.joda.time.Interval;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.WebContext;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.io.IOException;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import static com.googlecode.objectify.ObjectifyService.ofy;
 
 /**
  * Presents a list of events for a user.
@@ -34,8 +38,45 @@ public class UserStarredController extends ThymeleafController {
   @Override
   protected void doProcess(PathBuilder pathBuilder, WebContext context, TemplateEngine engine,
                            Optional<User> loggedInUser, int genconYear) throws Exception {
+    boolean isPost = context.getHttpServletRequest().getMethod().equals("POST");
 
-    List<GenconEvent> starredEvents = loggedInUser.get().getStarredEvents(genconYear);
+    if (isPost) {
+      handlePost(pathBuilder, context, engine, loggedInUser.get(), genconYear);
+    } else {
+      handleGet(pathBuilder, context, engine, loggedInUser.get(), genconYear);
+    }
+  }
+
+  Pattern eventIdPattern = Pattern.compile(
+      "(" + Joiner.on("|").join(GenconCategory.CATEGORY_ABBREVIATIONS) + ")"
+          + "\\d\\d\\d\\d\\d\\d\\d\\d");
+  void handlePost(PathBuilder pathBuilder, WebContext context,
+                  TemplateEngine engine, User loggedInUser, int genconYear) throws IOException {
+    String schedule = context.getHttpServletRequest().getParameter("schedule");
+    Matcher matcher = eventIdPattern.matcher(schedule);
+    List<String> foundEventIds = new ArrayList<>();
+    while (matcher.find()) {
+      foundEventIds.add(matcher.group());
+    }
+    loggedInUser.replaceStars(loadAllForIds(genconYear, foundEventIds));
+    ofy().save().entities(loggedInUser).now();
+
+    System.err.println("Found events: " + Joiner.on(", ").join(foundEventIds));
+    context.getHttpServletResponse().sendRedirect(pathBuilder.sitePath("starred"));
+  }
+
+  private Collection<GenconEvent> loadAllForIds(int genconYear, Collection<String> eventIds) {
+    Collection<String> actualIds = new ArrayList<>();
+    for (String eventId : eventIds) {
+      actualIds.add(GenconEvent.idForYear(genconYear, eventId));
+    }
+    return ofy().load().type(GenconEvent.class).ids(actualIds).values();
+  }
+
+  void handleGet(PathBuilder pathBuilder, WebContext context,
+                 TemplateEngine engine, User loggedInUser, int genconYear) throws IOException {
+
+    List<GenconEvent> starredEvents = loggedInUser.getStarredEvents(genconYear);
 
     context.setVariable("eventsByDay", EventFilters.eventsByDay(starredEvents));
     context.setVariable("eventsByCategory", EventFilters.eventsByCategory(starredEvents));
@@ -62,6 +103,7 @@ public class UserStarredController extends ThymeleafController {
     public final String genconUrl;
     public final String plannerUrl;
     public final String shortCat;
+    public final String location;
 
     // Passed in events are assumed to overlap in time.
     public CalendarEvent(List<GenconEvent> events, PathBuilder paths) {
@@ -74,10 +116,18 @@ public class UserStarredController extends ThymeleafController {
       this.endTimeSeconds = (int) (Iterables.getLast(events).getEndTime().getMillis() / 1000);
 
       ImmutableList.Builder<String> eventIds = ImmutableList.builder();
+
       for (GenconEvent event : events) {
         eventIds.add(event.getGameId());
       }
       this.eventIds = eventIds.build();
+
+      Set<String> locations = events.stream().map(e -> e.getLocation()).collect(Collectors.toSet());
+      if (locations.size() <= 1) {
+        this.location = Iterables.getFirst(locations, "");
+      } else {
+        this.location = "Multiple locations";
+      }
 
       Escaper escaper = UrlEscapers.urlFormParameterEscaper();
 
@@ -139,6 +189,7 @@ public class UserStarredController extends ThymeleafController {
           .add("endSeconds", endTimeSeconds)
           .add("eventIds", Joiner.on(", ").join(eventIds))
           .add("genconUrl", genconUrl)
+          .add("location", location)
           .toString();
     }
   }

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <cronentries>
   <cron>
-    <url>/2017/parseEvents?version=LIVE&amp;forceReparse=true</url>
+    <url>/2018/parseEvents?version=LIVE&amp;forceReparse=true</url>
     <description>Reparse the gencon events</description>
-    <schedule>every 2 hours synchronized</schedule>
+    <schedule>every 6 hours synchronized</schedule>
     <timezone>America/New_York</timezone>
   </cron>
 </cronentries>

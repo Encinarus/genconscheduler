@@ -1,26 +1,14 @@
 package com.lightpegasus.scheduler.gencon.entity;
 
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
-import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.googlecode.objectify.Ref;
-import com.googlecode.objectify.annotation.Cache;
-import com.googlecode.objectify.annotation.Entity;
-import com.googlecode.objectify.annotation.Id;
-import com.googlecode.objectify.annotation.Ignore;
-import com.googlecode.objectify.annotation.Index;
-import com.googlecode.objectify.annotation.Load;
-import com.googlecode.objectify.annotation.Stringify;
+import com.googlecode.objectify.annotation.*;
 import com.googlecode.objectify.stringifier.Stringifier;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -41,22 +29,11 @@ public class User {
   @Ignore private boolean isAdmin;
 
   public List<GenconEvent> getStarredEvents() {
-    return ImmutableList.copyOf(Iterables.transform(starredEvents,
-        new Function<Ref<GenconEvent>, GenconEvent>() {
-          @Override public GenconEvent apply(Ref<GenconEvent> input) {
-            return input.get();
-          }
-        }));
+    return ImmutableList.copyOf(Iterables.transform(starredEvents, Ref::get));
   }
 
   public List<GenconEvent> getStarredEvents(final int year) {
-    return FluentIterable.from(getStarredEvents())
-        .filter(new Predicate<GenconEvent>() {
-          @Override
-          public boolean apply(GenconEvent genconEvent) {
-            return genconEvent.getYear() == year;
-          }
-        }).toList();
+    return getStarredEvents().stream().filter(e -> e.getYear() == year).collect(Collectors.toList());
   }
 
   public boolean isAdmin() {
@@ -133,6 +110,11 @@ public class User {
     }
 
     return starOn;
+  }
+
+  public void replaceStars(Collection<GenconEvent> eventsToStar) {
+    starredEvents.clear();
+    starredEvents.addAll(eventsToStar.stream().map(Ref::create).collect(Collectors.toList()));
   }
 
   public boolean isEventStarred(GenconEvent event) {
